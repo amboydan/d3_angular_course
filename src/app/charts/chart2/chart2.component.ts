@@ -22,7 +22,7 @@ export class Chart2Component implements OnInit, OnChanges {
   bandwidth = 0;
   padding = 0;
   bandwidthCoef = 0.8; // 80%
-  left = 10; right = 20; bottom = 16; top = 15;
+  left = 20; right = 20; bottom = 16; top = 15;
   innerWidth: number;
   innerHeight: number;
 

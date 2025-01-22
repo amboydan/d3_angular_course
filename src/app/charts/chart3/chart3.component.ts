@@ -8,7 +8,7 @@ import { elementAt } from 'rxjs';
   imports: [],
   template: `<svg></svg>`,
   styleUrl: './chart3.component.scss',
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None // because of this the css will be applied to all styles
 })
 export class Chart3Component implements OnInit, OnChanges{
   host: any;
@@ -27,7 +27,7 @@ export class Chart3Component implements OnInit, OnChanges{
   innerWidth;
   xAxis: any;
   yAxis: any;
-  left = 60; right = 20; bottom = 16; top = 15;
+  left = 60; right = 20; bottom = 80; top = 15;
 
   x = d3.scaleBand().paddingInner(0.2).paddingOuter(0.2);
   y = d3.scaleLinear();
@@ -48,14 +48,15 @@ export class Chart3Component implements OnInit, OnChanges{
 
   // add another method
   setElements() {
-    this.dataContainer = this.svg.append('g').attr('class', 'dataContainer').
-    attr('transform', `translate(${this.left}, ${this.top})`);
-    
     this.xAxisContainer = this.svg.append('g').attr('class', 'xAxisContainer').
     attr('transform', `translate(${this.left}, ${this.top + this.innerHeight})`);
     
     this.yAxisContainer = this.svg.append('g').attr('class', 'yAxisContainer').
     attr('transform', `translate(${this.left}, ${this.top})`);
+
+    this.dataContainer = this.svg.append('g').attr('class', 'dataContainer').
+    attr('transform', `translate(${this.left}, ${this.top})`);
+    
   };
 
   setDimensions() {
@@ -69,16 +70,45 @@ export class Chart3Component implements OnInit, OnChanges{
     this.setParams();
     // important to run the set parameters first, then axis and before the draw
     this.setAxis()
+    this.setLabels()
     this.draw();
   }
 
+  setLabels() {
+    this.svg.append('g').attr('class', 'yAxisLabel')
+    .attr('transform', `translate(15, ${this.top + 0.5 * this.innerHeight})`)
+    .append('text').attr('class', 'label').text('Employee Salary')
+    // remember when rotating text that it will rotate around the ORIGIN
+    .attr('transform', `rotate(-90)`)
+    .style('text-anchor', 'middle');
+    
+    this.xAxisContainer.selectAll('.tick text')
+      .text((d) => this.getEmployeeName(d))
+      .attr('transform', 'translate(-9,2)rotate(-45)')
+      .style('text-anchor', 'end');
+  }
   setAxis() {
     this.xAxis = d3.axisBottom(this.x);
     this.xAxisContainer.call(this.xAxis);
 
-    this.yAxis = d3.axisLeft(this.y);
+    this.yAxis = d3.axisLeft(this.y)
+      //.tickSizeOuter(0)
+      .tickSizeInner(-this.innerWidth)
+      .tickPadding(10)
+      .tickFormat(
+        //d3.format("$,")
+        //remove the insignificant zeros
+        d3.format("$~s")
+      );
     this.yAxisContainer.call(this.yAxis);
+
+    this.yAxisContainer.selectAll('.tick line')
+      .style('stroke', '#ddd');
+    
+    
   }
+
+  getEmployeeName = (id) => this.data.find((d) => d.id === id).employee_name;
 
   setParams() {
     const ids = this.data.map((d) => d.id);

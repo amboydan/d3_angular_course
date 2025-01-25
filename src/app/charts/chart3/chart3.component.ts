@@ -16,7 +16,7 @@ export class Chart3Component implements OnInit, OnChanges{
   dataContainer: any;
   xAxisContainer: any;
   yAxisContainer: any;
-
+  textLabel: any;
 
   @Input() data;
 
@@ -27,15 +27,19 @@ export class Chart3Component implements OnInit, OnChanges{
   innerWidth;
   xAxis: any;
   yAxis: any;
-  left = 60; right = 20; bottom = 80; top = 15;
+  left = 60; right = 20; bottom = 80; top = 30;
 
   x = d3.scaleBand().paddingInner(0.2).paddingOuter(0.2);
   y = d3.scaleLinear();
 
-  dataIsFiltered = false;
+  //dataIsFiltered = false;
+  sortedBySalary = true;
 
   get barsData() {
-    return this.dataIsFiltered ? this.data.filter((d, i) => i >= 12) : this.data;
+    return this.sortedBySalary 
+    // ? this.data.filter((d, i) => i >= 12) : this.data;
+    ? this.data.sort((a, b) => +b.employee_salary - +a.employee_salary)
+    : this.data.sort((a, b) => a.employee_name < b.employee_name ? -1 : 1);
   };
 
   constructor( element: ElementRef) {
@@ -54,22 +58,34 @@ export class Chart3Component implements OnInit, OnChanges{
   }
 
   dataChanged() {
-    this.dataIsFiltered = !this.dataIsFiltered;
+    this.sortedBySalary = !this.sortedBySalary;
     this.updateChart();
     console.log(this.barsData);
   };
 
   // add another method
   setElements() {
-    this.xAxisContainer = this.svg.append('g').attr('class', 'xAxisContainer').
-    attr('transform', `translate(${this.left}, ${this.top + this.innerHeight})`);
+    this.xAxisContainer = this.svg.append('g')
+      .attr('class', 'xAxisContainer')
+      .attr('transform', `translate(${this.left}, ${this.top + this.innerHeight})`);
     
-    this.yAxisContainer = this.svg.append('g').attr('class', 'yAxisContainer').
-    attr('transform', `translate(${this.left}, ${this.top})`);
+    this.yAxisContainer = this.svg.append('g')
+      .attr('class', 'yAxisContainer')
+      .attr('transform', `translate(${this.left}, ${this.top})`);
 
-    this.dataContainer = this.svg.append('g').attr('class', 'dataContainer').
-    attr('transform', `translate(${this.left}, ${this.top})`);
-    
+    this.dataContainer = this.svg.append('g')
+      .attr('class', 'dataContainer')
+      .attr('transform', `translate(${this.left}, ${this.top})`);
+
+    this.textLabel = this.svg.append('g')
+      .attr('class', 'yAxisLabel')
+      .attr('transform', `translate(${0.5 * this.dimensions.width}, 20)`)
+      .append('text')
+      .attr('class', 'label')
+      // remember when rotating text that it will rotate around the ORIGIN
+      //.attr('transform', `rotate(-90)`) // perhaps make it the title
+      .style('text-anchor', 'middle')
+      .style('font-weight', 'bold');
   };
 
   setDimensions() {
@@ -92,21 +108,26 @@ export class Chart3Component implements OnInit, OnChanges{
   }
 
   setLabels() {
-    this.svg.append('g').attr('class', 'yAxisLabel')
-    .attr('transform', `translate(15, ${this.top + 0.5 * this.innerHeight})`)
-    .append('text').attr('class', 'label').text('Employee Salary')
-    // remember when rotating text that it will rotate around the ORIGIN
-    .attr('transform', `rotate(-90)`)
-    .style('text-anchor', 'middle');
-    
-    this.xAxisContainer.selectAll('.tick text')
+    this.textLabel
+      .text('Employee Salary')
+  }
+  setAxis() {
+    const updateXAxis = (xAxisContainer) =>{
+      xAxisContainer.call(this.xAxis);
+
+      
+      xAxisContainer
+      .selectAll('.tick text')
       .text((d) => this.getEmployeeName(d))
       .attr('transform', 'translate(-9,2)rotate(-45)')
       .style('text-anchor', 'end');
-  }
-  setAxis() {
+    };
+
     this.xAxis = d3.axisBottom(this.x);
-    this.xAxisContainer.call(this.xAxis);
+    this.xAxisContainer
+      .transition()
+      .duration(500)
+      .call(updateXAxis);
 
     this.yAxis = d3.axisLeft(this.y)
       //.tickSizeOuter(0)
@@ -121,8 +142,7 @@ export class Chart3Component implements OnInit, OnChanges{
 
     this.yAxisContainer.selectAll('.tick line')
       .style('stroke', '#ddd');
-    
-    
+   
   }
 
   getEmployeeName = (id) => this.data.find((d) => d.id === id).employee_name;
@@ -136,8 +156,8 @@ export class Chart3Component implements OnInit, OnChanges{
 
   draw() {
     const bars = this.dataContainer.selectAll('rect')
-      .data(this.barsData);
-
+      //.data(this.barsData || [], (d) => d.id); // this "key" of id creates an animation effect by preserving the id
+      .data(this.barsData || []);
       // First we bind the data (classical but merge takes care of this)
       // bars
       // .attr('x', (d) => this.x(d.id))
@@ -148,6 +168,8 @@ export class Chart3Component implements OnInit, OnChanges{
       // Then we enter new data as it is needed
       bars.enter().append('rect')
       .merge(bars)
+      .transition()
+      .duration(500)
       .attr('x', (d) => this.x(d.id))
       .attr('width', this.x.bandwidth())
       .attr('y', (d) => this.y(d.employee_salary))

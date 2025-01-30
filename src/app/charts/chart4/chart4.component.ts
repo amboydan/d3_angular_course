@@ -1,6 +1,7 @@
 import { Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as d3 from 'd3';
+import { elementAt } from 'rxjs';
 
 @Component({
   selector: 'app-chart4',
@@ -42,9 +43,31 @@ export class Chart4Component implements OnInit, OnChanges{
   xValue: string;
   yValue: string;
 
+  x: any;
+  y: any;
+
   constructor(element: ElementRef) {
     this.host = d3.select(element.nativeElement);
     console.log(this);
+  }
+
+  get scatterData() {
+    // prior to setting the drop downs there is no data
+    // so if x and y are not then return empty array
+    if(!this.xValue || !this.yValue) { return []; }
+
+    return this.data.map((elem) => {
+      return {
+        // + because they are returning strings
+        x: +elem[this.xValue],
+        y: +elem[this.yValue]
+      }
+    })
+    /* return this.data.map((elem) => ({
+            x: 0,
+            y: 0,
+          };
+        }) this will also work*/
   }
 
   ngOnInit(): void {
@@ -53,6 +76,7 @@ export class Chart4Component implements OnInit, OnChanges{
 
     this.setDimensions();
     this.setElements();
+    this.updateChart();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -60,6 +84,7 @@ export class Chart4Component implements OnInit, OnChanges{
     if(!this.svg) { return };
     this.updateChart();
   }
+
   setOption(option: string, event) {
     const value = event && event.target && event.target.value;
 
@@ -125,12 +150,27 @@ export class Chart4Component implements OnInit, OnChanges{
       .attr('transform', `translate(15, ${this.margins.top + 0.5 * this.innerHeight})`)
       .append('text')
       .attr('class', 'label')
+      .attr('transform', 'rotate(-90)')
       .style('text-anchor', 'middle');
 
   }
 
-  setParams() {}
-  setLabels() {}
+  setParams() {
+    const maxXValue = d3.max(this.data, (d) => +d[this.xValue]) || 1;
+    const maxYValue = d3.max(this.data, (d) => +d[this.yValue]) || 1;
+    
+    this.x = d3.scaleLinear()
+      .domain([0, maxXValue])
+      .range([0, this.innerWidth])
+
+    this.y = d3.scaleLinear()
+      .domain([0, maxYValue])
+      .range([this.innerHeight, 0])
+  }
+  setLabels() {
+    this.xLabel.text(this.xValue);
+    this.yLabel.text(this.yValue);
+  }
   setAxis() {}
   draw() {}
 

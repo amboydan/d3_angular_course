@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as d3 from 'd3';
 import { elementAt } from 'rxjs';
@@ -9,7 +9,8 @@ import { elementAt } from 'rxjs';
   //imports CommonModule is necessary for 
   imports: [CommonModule],
   templateUrl: './chart4.component.html',
-  styleUrl: './chart4.component.scss'
+  styleUrl: './chart4.component.scss',
+  encapsulation: ViewEncapsulation.None
 })
 export class Chart4Component implements OnInit, OnChanges{
   host: any;
@@ -122,11 +123,6 @@ export class Chart4Component implements OnInit, OnChanges{
   }
 
   setElements() {
-    this.dataContainer = this.svg
-      .append('g')
-      .attr('class', 'dataContainer')
-      .attr('transform', `translate(${this.margins.left}, ${this.margins.top})`);
-
     this.xAxisContainer = this.svg
       .append('g')
       .attr('class', 'xAxisContainer')
@@ -154,6 +150,10 @@ export class Chart4Component implements OnInit, OnChanges{
       .attr('transform', 'rotate(-90)')
       .style('text-anchor', 'middle');
 
+      this.dataContainer = this.svg
+        .append('g')
+        .attr('class', 'dataContainer')
+        .attr('transform', `translate(${this.margins.left}, ${this.margins.top})`);
   }
 
   setParams() {
@@ -206,10 +206,14 @@ export class Chart4Component implements OnInit, OnChanges{
     scatter.enter()
       .append('circle')
       .attr('class', 'data')
+      .attr('r', 4)
+      .style('fill', 'blue')
+      .style('stroke', 'black')
+      .style('stroke-width', 1)
+      .style('opacity', 0.4)
       .merge(scatter)
       .attr('cx', (d) => this.x(+d.x))
-      .attr('cy', (d) => this.y(+d.y))
-      .attr('r', 3);
+      .attr('cy', (d) => this.y(+d.y));
 
     // exit
     scatter

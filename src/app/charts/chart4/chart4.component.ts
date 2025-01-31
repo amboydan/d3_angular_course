@@ -24,7 +24,7 @@ export class Chart4Component implements OnInit, OnChanges{
 
   @Input() data;
 
-  rectWidth = 30;
+  rectWidth = 20;
   padding = 5;
   dimensions: DOMRect;
   innerHeight: number;
@@ -77,6 +77,7 @@ export class Chart4Component implements OnInit, OnChanges{
     this.setDimensions();
     this.setElements();
     this.updateChart();
+
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -129,7 +130,7 @@ export class Chart4Component implements OnInit, OnChanges{
     this.xAxisContainer = this.svg
       .append('g')
       .attr('class', 'xAxisContainer')
-      .attr('transform', `translate(${this.margins.left}, ${this.margins.bottom + this.innerHeight})`);
+      .attr('transform', `translate(${this.margins.left}, ${this.margins.top + this.innerHeight})`);
     
     this.yAxisContainer = this.svg
       .append('g')
@@ -171,7 +172,49 @@ export class Chart4Component implements OnInit, OnChanges{
     this.xLabel.text(this.xValue);
     this.yLabel.text(this.yValue);
   }
-  setAxis() {}
-  draw() {}
+  setAxis() {
+    this.xAxis = d3.axisBottom(this.x)
+      .tickSizeOuter(0);
+    this.yAxis = d3.axisLeft(this.y)
+      .ticks(5)
+      .tickSizeInner(-this.innerWidth)
+      .tickSizeOuter(0);
+
+    this.xAxisContainer
+      .transition()
+      .duration(500)
+      .call(this.xAxis);
+
+    this.yAxisContainer
+      .transition()
+      .duration(500)
+      .call(this.yAxis);
+
+    this.yAxisContainer
+      .selectAll('.tick:not(:nth-child(2)) line')
+      .style('stroke', '#ddd')
+      .style('stroke-dasharray', '2 2')
+  }
+
+  draw() {
+    // bind the data
+    const scatter = this.dataContainer
+      .selectAll('circle.data')
+      .data(this.scatterData);
+
+    // enter and merge
+    scatter.enter()
+      .append('circle')
+      .attr('class', 'data')
+      .merge(scatter)
+      .attr('cx', (d) => this.x(+d.x))
+      .attr('cy', (d) => this.y(+d.y))
+      .attr('r', 3);
+
+    // exit
+    scatter
+      .exit()
+      .remove();
+  }
 
 }

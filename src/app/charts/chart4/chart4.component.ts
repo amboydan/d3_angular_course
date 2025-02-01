@@ -27,25 +27,31 @@ export class Chart4Component implements OnInit, OnChanges{
 
   rectWidth = 20;
   padding = 5;
+
+  // dimentions
   dimensions: DOMRect;
   innerHeight: number;
   innerWidth: number;
+
+  // axis
   xAxis: any;
   yAxis: any;
-  //left = 60; right = 20; bottom = 80; top = 30;
   
   margins = {
     left: 40,
     top: 20,
-    right: 20,
+    right: 30,
     bottom: 40
   }
 
+  // user options
   xValue: string;
   yValue: string;
 
+  // scales
   x: any;
   y: any;
+  colors: any;
 
   constructor(element: ElementRef) {
     this.host = d3.select(element.nativeElement);
@@ -61,7 +67,8 @@ export class Chart4Component implements OnInit, OnChanges{
       return {
         // + because they are returning strings
         x: +elem[this.xValue],
-        y: +elem[this.yValue]
+        y: +elem[this.yValue],
+        species: elem.Species
       }
     })
     /* return this.data.map((elem) => ({
@@ -157,9 +164,10 @@ export class Chart4Component implements OnInit, OnChanges{
   }
 
   setParams() {
-    const maxXValue = d3.max(this.data, (d) => +d[this.xValue]) || 1;
-    const maxYValue = d3.max(this.data, (d) => +d[this.yValue]) || 1;
-    
+    const maxXValue = this.xValue ? d3.max(this.data, (d) => +d[this.xValue]) : 1;
+    const maxYValue = this.yValue ? d3.max(this.data, (d) => +d[this.yValue]) : 1;
+    const uniqueSpecies = new Set((this.data || []).map((d) => d.Species));
+
     this.x = d3.scaleLinear()
       .domain([0, maxXValue])
       .range([0, this.innerWidth])
@@ -167,6 +175,9 @@ export class Chart4Component implements OnInit, OnChanges{
     this.y = d3.scaleLinear()
       .domain([0, maxYValue])
       .range([this.innerHeight, 0])
+
+    this.colors = d3.scaleOrdinal(d3.schemeCategory10)
+      .domain(uniqueSpecies);
   }
   setLabels() {
     this.xLabel.text(this.xValue);
@@ -207,7 +218,7 @@ export class Chart4Component implements OnInit, OnChanges{
       .append('circle')
       .attr('class', 'data')
       .attr('r', 4)
-      .style('fill', 'blue')
+      .style('fill', (d) => this.colors(d.species))
       .style('stroke', 'black')
       .style('stroke-width', 1)
       .style('opacity', 0.4)

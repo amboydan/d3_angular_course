@@ -46,7 +46,7 @@ export class ApiService {
   }
 
   // the below code gives a corrs warning so will have alternative
-  getCovidDate(): Observable<any> {
+  getCovidData(): Observable<any> {
     const url = 'https://api.covidtracking.com/v1/us/daily.json'
     return this.getParsedData(url);
   }

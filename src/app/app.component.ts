@@ -4,6 +4,7 @@ import { Chart1Component } from "./charts/chart1/chart1.component";
 import { Chart2Component } from './charts/chart2/chart2.component';
 import { Chart3Component } from './charts/chart3/chart3.component';
 import { Chart4Component } from './charts/chart4/chart4.component';
+import { Chart5Component } from './charts/chart5/chart5.component';
 import { ApiService } from './services/api.service';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -12,7 +13,8 @@ import { CommonModule } from '@angular/common';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, Chart1Component, Chart2Component, 
-    CommonModule, Chart3Component, Chart4Component],
+    CommonModule, Chart3Component, Chart4Component,
+    Chart5Component],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -35,7 +37,10 @@ export class AppComponent implements OnInit{
     
     this.data2$ = this.api.getEmployees();
     this.iris$ = this.api.getIris();
-    this.iris$.subscribe(res => console.log(res));
+    this.covidData$ = this.api.getCovidData();
+
+    this.covidData$.subscribe(res => console.log(res));
+
     //console.log(this.data2$.subscribe(res => console.log(res)));
     setTimeout(
       () => {

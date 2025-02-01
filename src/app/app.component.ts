@@ -25,6 +25,8 @@ export class AppComponent implements OnInit{
 
   iris$: Observable<any>;
 
+  covidData$: Observable<any>;
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {

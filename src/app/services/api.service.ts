@@ -7,6 +7,7 @@ import * as d3 from 'd3';
 @Injectable({
   providedIn: 'root'
 })
+
 export class ApiService {
 
   constructor(private http: HttpClient) { }
@@ -41,6 +42,12 @@ export class ApiService {
   // the below code gives a corrs warning so will have alternative
   getIris(): Observable<any> {
     const url = 'https://raw.githubusercontent.com/d3taviz/dashboardOne/scatterplot-init/src/assets/iris.csv'
+    return this.getParsedData(url);
+  }
+
+  // the below code gives a corrs warning so will have alternative
+  getCovidDate(): Observable<any> {
+    const url = 'https://api.covidtracking.com/v1/us/daily.json'
     return this.getParsedData(url);
   }
 }

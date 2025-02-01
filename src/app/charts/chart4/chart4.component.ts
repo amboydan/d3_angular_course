@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as d3 from 'd3';
-import { elementAt } from 'rxjs';
+//import { elementAt } from 'rxjs';
 
 @Component({
   selector: 'app-chart4',
@@ -12,6 +12,7 @@ import { elementAt } from 'rxjs';
   styleUrl: './chart4.component.scss',
   encapsulation: ViewEncapsulation.None
 })
+
 export class Chart4Component implements OnInit, OnChanges{
   host: any;
   svg: any;
@@ -179,10 +180,12 @@ export class Chart4Component implements OnInit, OnChanges{
     this.colors = d3.scaleOrdinal(d3.schemeCategory10)
       .domain(uniqueSpecies);
   }
+
   setLabels() {
     this.xLabel.text(this.xValue);
     this.yLabel.text(this.yValue);
   }
+
   setAxis() {
     this.xAxis = d3.axisBottom(this.x)
       .tickSizeOuter(0);

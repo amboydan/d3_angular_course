@@ -11,6 +11,24 @@ import * as d3 from 'd3';
 export class ApiService {
 
   constructor(private http: HttpClient) { }
+
+  
+  getParsedData(url: string): Observable<any> {
+    return this.http.get(url, { responseType: 'text'})
+      .pipe(
+        retry(3),
+        map((csv) => d3.csvParse(csv))
+      );
+  }
+
+  getJson(url: string): Observable<any> {
+    return this.http.get<any>(url)
+      .pipe(
+        retry(3)
+        // do not need to map this data because if we do it will create only columns in the set
+        //map((answer) => answer.data)
+      );
+  }
   
   // the below code gives a corrs warning so will have alternative
   // getEmployees(): Observable<any> {
@@ -31,14 +49,6 @@ export class ApiService {
     )
   }
 
-  getParsedData(url: string): Observable<any> {
-    return this.http.get(url, { responseType: 'text'})
-      .pipe(
-        retry(3),
-        map((csv) => d3.csvParse(csv))
-      );
-  }
-
   // the below code gives a corrs warning so will have alternative
   getIris(): Observable<any> {
     const url = 'https://raw.githubusercontent.com/d3taviz/dashboardOne/scatterplot-init/src/assets/iris.csv'
@@ -48,6 +58,7 @@ export class ApiService {
   // the below code gives a corrs warning so will have alternative
   getCovidData(): Observable<any> {
     const url = 'https://api.covidtracking.com/v1/us/daily.json'
-    return this.getParsedData(url);
+    //getParsedDate is not necessary below because we are already recieving a json file
+    return this.getJson(url);
   }
 }

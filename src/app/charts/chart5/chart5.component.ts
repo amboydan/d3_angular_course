@@ -119,7 +119,11 @@ export class Chart5Component implements OnInit, OnChanges{
 
   // within chart update
   setParams() {
+    // domains
 
+    // ranges
+
+    // set scales
   }
   setLabels() {
 

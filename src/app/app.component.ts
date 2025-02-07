@@ -39,7 +39,7 @@ export class AppComponent implements OnInit{
     this.iris$ = this.api.getIris();
     this.covidData$ = this.api.getCovidData();
 
-    this.covidData$.subscribe(res => console.log(res));
+    //this.covidData$.subscribe(res => console.log(res));
 
     //console.log(this.data2$.subscribe(res => console.log(res)));
     setTimeout(

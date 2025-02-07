@@ -43,6 +43,28 @@ export class Chart5Component implements OnInit, OnChanges{
   y: any;
   colors: any;
 
+  // selected data
+  selected = ['hospitalized', 'death', 'hospitalizedCurrently'];
+
+  // getters
+  get lineData() {
+    // return !this.data ? [] : this.data.map((d) => {
+    //   return {
+    //     x: this.timeParse(d.date),
+    //     y: d.hospitalized
+    //   }
+    // })
+    return this.selected.map((item) => {
+      return {
+        name: item,
+        data: this.data.map((d) => ({
+          x: this.timeParse(d.date),
+          y: d[item]
+        }))
+      }
+    })
+  }
+
   // chart labels
   textTitle: any;
   xLabel: any;
@@ -119,11 +141,32 @@ export class Chart5Component implements OnInit, OnChanges{
 
   // within chart update
   setParams() {
+    // temporary solution
+    const parsedDates = !this.data ? [] : this.data.map((d) => this.timeParse(d.date));
+    
     // domains
+    // double exclamation marks converts to boolean
+    const xDomain = !!parsedDates ? d3.extent(parsedDates) : [0, Date.now()];
+    const yDomain = [0, 100];
+    const colorDomain = ['A', 'B', 'C'];
 
     // ranges
+    const xRange = [0, this.innerWidth];
+    const yRange = [this.innerHeight, 0];
+    const colorRange = d3.schemeCategory10;
 
     // set scales
+    this.x = d3.scaleTime()
+      .domain(xDomain)
+      .range(xRange);
+
+    this.y = d3.scaleLinear()
+      .domain(yDomain)
+      .range(yRange);
+
+    this.colors = d3.scaleOrdinal()
+      .domain(colorDomain)
+      .range(colorRange);
   }
   setLabels() {
 

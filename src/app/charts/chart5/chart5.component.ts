@@ -54,6 +54,8 @@ export class Chart5Component implements OnInit, OnChanges{
     //     y: d.hospitalized
     //   }
     // })
+    if (!this.data) {return []; };
+
     return this.selected.map((item) => {
       return {
         name: item,
@@ -61,6 +63,8 @@ export class Chart5Component implements OnInit, OnChanges{
           x: this.timeParse(d.date),
           y: d[item]
         }))
+        .filter((d) => d.y != null)
+        .sort((a, b) => a.x < b.x ? -1 : 1)
       }
     })
   }
@@ -77,6 +81,10 @@ export class Chart5Component implements OnInit, OnChanges{
   // time formaters
   timeParse = d3.timeParse('%Y%m%d')
   niceData = d3.timeFormat('%Y-%B'); // 2021-March
+
+  // line generator. define it here but define it after we have the 
+  // scales set up in setParams
+  line: any; 
 
   // try to keep all the methods in the same section
   // dimentions and elements get set once "in the lifecycle" of the chart
@@ -141,14 +149,22 @@ export class Chart5Component implements OnInit, OnChanges{
 
   // within chart update
   setParams() {
+    // bring in the line data that has been worked up
+    const data = this.lineData;
+
     // temporary solution
     const parsedDates = !this.data ? [] : this.data.map((d) => this.timeParse(d.date));
     
     // domains
     // double exclamation marks converts to boolean
     const xDomain = !!parsedDates ? d3.extent(parsedDates) : [0, Date.now()];
-    const yDomain = [0, 100];
-    const colorDomain = ['A', 'B', 'C'];
+
+    // the maxValues is going to get the max for each series (line) we identified above
+    // map into the and then max for that series
+    const maxValues = data.map((series) => d3.max(series.data, (d) => d.y))
+    
+    const yDomain = !this.data ? [0, 100] : [0, d3.max(maxValues)];
+    const colorDomain = this.selected;
 
     // ranges
     const xRange = [0, this.innerWidth];
@@ -167,33 +183,42 @@ export class Chart5Component implements OnInit, OnChanges{
     this.colors = d3.scaleOrdinal()
       .domain(colorDomain)
       .range(colorRange);
+
+    // need to redefine the lines every time we change the scales
+    this.line = d3.line()
+      .x((d) => this.x(d.x))
+      .y((d) => this.y(d.y));
   }
   setLabels() {
 
   }
   setAxis() {
-    // this.xAxis = d3.axisBottom(this.x)
-    //   .tickSizeOuter(0);
+    this.xAxis = d3.axisBottom(this.x)
+      .ticks(d3.timeMonth.every(2))
+      .tickSizeOuter(0);
 
-    // this.yAxis = d3.axisLeft(this.y)
-    //   .ticks(5)
-    //   .tickSizeInner(-this.innerWidth)
-    //   .tickSizeOuter(0);
+    this.yAxis = d3.axisLeft(this.y)
+      .ticks(8)
+      .tickSizeInner(-this.innerWidth)
+      .tickSizeOuter(0)
+      .tickFormat(
+              d3.format("~s")
+            );
 
-    // this.xAxisContainer
-    //   .transition()
-    //   .duration(500)
-    //   .call(this.xAxis);
+    this.xAxisContainer
+      .transition()
+      .duration(500)
+      .call(this.xAxis);
 
-    // this.yAxisContainer
-    //   .transition()
-    //   .duration(500)
-    //   .call(this.yAxis);
+    this.yAxisContainer
+      .transition()
+      .duration(500)
+      .call(this.yAxis);
 
-    // this.yAxisContainer
-    //   .selectAll('.tick:not(:nth-child(2)) line')
-    //   .style('stroke', '#ddd')
-    //   .style('stroke-dasharray', '2 2')
+    this.yAxisContainer
+      .selectAll('.tick:not(:nth-child(2)) line')
+      .style('stroke', '#999')
+      .style('stroke-dasharray', '2 2')
   }
 
   setLegend() {
@@ -201,7 +226,29 @@ export class Chart5Component implements OnInit, OnChanges{
   }
 
   draw() {
+    // binding the data
+    // remember that you do not want a 'line', you want a ===> path
+    const lines = this.dataContainer.selectAll('path .data')
+      .data(this.lineData);
 
+    // enter and merge
+    lines
+      .enter()
+      .append('path')
+      // it is important to add the class data here because the next time we draw we will need to selec 
+      // all those classes.  d3 will continuously generate if we do not redraw with classes
+      .attr('class', 'data')
+      .style('fill', 'none')
+      .style('stroke', (d)  => this.colors(d.name))
+      .style('stroke-width', '2')
+      .merge(lines)
+      // 'd' has a name and data
+      .attr('d', (d) => this.line(d.data));
+    
+    // exit
+    lines
+      .exit()
+      .remove();
   }
 
   updateChart() {

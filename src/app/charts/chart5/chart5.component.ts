@@ -120,7 +120,7 @@ export class Chart5Component implements OnInit, OnChanges{
     this.title = this.svg
       .append('g')
       .attr('class', 'titleContainer')
-      .attr('transform', `translate(${this.margins.left + 0.5 * this.innerWidth}, ${0.5 * this.margins.top})`)
+      .attr('transform', `translate(${this.margins.left + 0.5 * this.innerWidth}, ${0.7 * this.margins.top})`)
       .append('text')
       .attr('class', 'title')
       .style('text-anchor', 'middle');
@@ -190,7 +190,7 @@ export class Chart5Component implements OnInit, OnChanges{
       .y((d) => this.y(d.y));
   }
   setLabels() {
-
+    this.title.text('Covid 19 Evolution in US');
   }
   setAxis() {
     this.xAxis = d3.axisBottom(this.x)
@@ -222,7 +222,71 @@ export class Chart5Component implements OnInit, OnChanges{
   }
 
   setLegend() {
+    // specific methods
+    const generateLegendItems = (selection: any) => {
+      selection.append('circle')
+          .attr('class', 'legend-icon')
+          .attr('cx', 3)
+          .attr('cy', -4)
+          .attr('r', 3);
 
+      selection.append('text')
+          .attr('class', 'legend-label')
+          .attr('x', 9)
+          .style('font-size', '0.8rem');
+    }
+
+    const updateLegendItems = (selection: any) => {
+      selection
+        .selectAll('circle.legend-icon')
+        .style('fill', (d) => this.colors(d));
+
+      selection
+        .selectAll('text.legend-label')
+        .text((d) => d);
+    }
+
+    // 1. select item containers and bind data
+    const itemContainers = this.legendContainer
+      .selectAll('g.legend-item')
+      .data(this.selected);
+
+    // 2. enter:
+    //  a. add new containers
+    //  b. add circle + text
+    itemContainers
+      .enter()
+      .append('g')
+        .attr('class', 'legend-item')
+        .call(generateLegendItems)
+      .merge(itemContainers)
+        .call(updateLegendItems)
+        .on('mouseover', () => { console.log('hover'); })
+        .on('click', () => { console.log('click'); });
+    
+    //  3b. bind events (click + hover)
+    
+    
+    // 5. remove groups not needed
+    itemContainers
+      .exit()
+      .remove();
+
+    // 6. Repositioning items
+    //"remember if i want to catch the latest version of the selction I need to select them again"
+    let totalPadding = 0;
+    this.legendContainer.selectAll('g.legend-item')
+      .each(function() {
+        const g = d3.select(this);
+        g.attr('transform', `translate(${totalPadding}, 0)`);
+        totalPadding += g.node().getBBox().width + 10;
+      });
+
+    // 7. Repositioning legend
+    const legendWidth = this.legendContainer.node().getBBox().width;
+
+    this.legendContainer
+      .attr('transform', `translate(${this.margins.left + 0.5 * (this.innerWidth - legendWidth)}, ${this.dimensions.height - 0.5 * this.margins.bottom + 10})`);
   }
 
   draw() {

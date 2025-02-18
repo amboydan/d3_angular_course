@@ -1,5 +1,8 @@
 .chart5 {
-    
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: column;
     text.title {
         font-size: 12px;
         font-weight: bold;

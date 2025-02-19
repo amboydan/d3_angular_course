@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+//import { RouterOutlet } from '@angular/router';
 import { Chart1Component } from "./charts/chart1/chart1.component";
 import { Chart2Component } from './charts/chart2/chart2.component';
 import { Chart3Component } from './charts/chart3/chart3.component';
@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, Chart1Component, Chart2Component, 
+  imports: [Chart1Component, Chart2Component, 
     CommonModule, Chart3Component, Chart4Component,
     Chart5Component],
   templateUrl: './app.component.html',
@@ -43,7 +43,7 @@ export class AppComponent implements OnInit{
     this.browsers$ = this.api.getBrowsersData();
 
     // can get the response from an api call through a subscription
-    //this.data2$.subscribe(c => console.log(c));
+    // this.data2$.subscribe(c => console.log(c));
      this.browsers$.subscribe(c => console.log(c));
     // this.covidData$.subscribe(res => console.log(res));
     // console.log(this.data2$.subscribe(res => console.log(res)));

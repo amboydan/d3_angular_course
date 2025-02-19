@@ -65,5 +65,11 @@ export class ApiService {
   getBrowsersData(): Observable<any> {
     const url = 'assets/browsers.json';
     return this.getJson(url);
+    // return this.http.get<any>('assets/browsers.json')
+    // .pipe(
+    //   retry(3),
+      //map is imported from rxjs.operators
+      //map((answer) => answer.data)
+    //)
   }
 }

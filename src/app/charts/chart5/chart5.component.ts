@@ -254,6 +254,8 @@ export class Chart5Component implements OnInit, OnChanges{
 
   private hoverLine(selected?: string): void {
     const index = selected ? this.selected.indexOf(selected) : -1;
+    // this.active will only update if it is true.  when you hover
+    // over the item that is blanked out there will be no response
     if (selected && this.active[index]) {
         this.dataContainer
             .selectAll('path.data')
@@ -267,79 +269,7 @@ export class Chart5Component implements OnInit, OnChanges{
     }
 }
 
-  // setLegend() {
-  //   // specific methods
-  //   const generateLegendItems = (selection: any) => {
-  //     selection.append('circle')
-  //         .attr('class', 'legend-icon')
-  //         .attr('cx', 3)
-  //         .attr('cy', -4)
-  //         .attr('r', 3);
-
-  //     selection.append('text')
-  //         .attr('class', 'legend-label')
-  //         .attr('x', 9)
-  //         .style('font-size', '0.8rem');
-  //   }
-
-  //   const updateLegendItems = (selection: any) => {
-  //     selection
-  //       .selectAll('circle.legend-icon')
-  //       .style('fill', (d) => this.colors(d));
-
-  //     selection
-  //       .selectAll('text.legend-label')
-  //       .text((d) => d);
-  //   }
-
-  //   // 1. select item containers and bind data
-  //   const itemContainers = this.legendContainer
-  //     .selectAll('g.legend-item')
-  //     .data(this.selected);
-
-  //   // 2. enter:
-  //   //  a. add new containers
-  //   //  b. add circle + text
-  //   itemContainers
-  //     .enter()
-  //     .append('g')
-  //       .attr('class', 'legend-item')
-  //       .call(generateLegendItems)
-  //     .merge(itemContainers)
-  //       .call(updateLegendItems)
-  //       .on('mouseover', (event, name: string) => this.hoverLine(name))
-  //       .on('mouseleave', (event, name: string) => this.hoverLine(name))
-  //       .on('click', (event: PointerEvent, name: string) => {
-  //         this.toggleActive(name);
-  //         this.updateChart();
-  //       });
-    
-  //   //  3b. bind events (click + hover)
-    
-    
-  //   // 5. remove groups not needed
-  //   itemContainers
-  //     .exit()
-  //     .remove();
-
-  //   // 6. Repositioning items
-  //   //"remember if i want to catch the latest version of the selction I need to select them again"
-  //   let totalPadding = 0;
-  //   this.legendContainer.selectAll('g.legend-item')
-  //     .each(function() {
-  //       const g = d3.select(this);
-  //       g.attr('transform', `translate(${totalPadding}, 0)`);
-  //       totalPadding += g.node().getBBox().width + 10;
-  //     });
-
-  //   // 7. Repositioning legend
-  //   const legendWidth = this.legendContainer.node().getBBox().width;
-
-  //   this.legendContainer
-  //     .attr('transform', `translate(${this.margins.left + 0.5 * (this.innerWidth - legendWidth)}, ${this.dimensions.height - 0.5 * this.margins.bottom + 10})`);
-  // }
-
-  private setLegend(): void {
+private setLegend(): void {
     // Methods
     const generateLegendItems = (selection: any) => {
         selection
@@ -379,17 +309,17 @@ export class Chart5Component implements OnInit, OnChanges{
         .attr('class', 'legend-item')
         .call(generateLegendItems)
         .merge(itemContainers)
-        .call(updateLegendItems)
-        .on('mouseover', (event: PointerEvent, name: string) => this.hoverLine(name))
-        .on('mouseleave', () => this.hoverLine())
-        .on('click', (event: PointerEvent, name: string) => {
-            this.toggleActive(name);
-            this.hoverLine();
-            this.updateChart();
-        })
-        .transition()
-        .duration(500)
-        .style('opacity', (d: any, i: number) => this.active[i] ? 1 : 0.3);
+          .call(updateLegendItems)
+          .on('mouseover', (event: PointerEvent, name: string) => this.hoverLine(name))
+          .on('mouseleave', () => this.hoverLine())
+          .on('click', (event: PointerEvent, name: string) => {
+              this.toggleActive(name);
+              this.hoverLine();
+              this.updateChart();
+          })
+          .transition()
+          .duration(500)
+          .style('opacity', (d: any, i: number) => this.active[i] ? 1 : 0.3);
 
     // 3 - Remove unneeded groups
     itemContainers.exit().remove();
@@ -416,7 +346,10 @@ export class Chart5Component implements OnInit, OnChanges{
     // remember that you do not want a 'line', you want a ===> path
     const lines = this.dataContainer
       .selectAll('path.data')
-      .data(this.lineData);
+      // (d) => d.name is 'a key' solves the problem of the indexes not being keys for 
+      // the lines.  during transitions the lines turn into each other (jagged transition)
+      // to solve this we make the names the keys for the lines. 
+      .data(this.lineData, (d) => d.name);
 
     // enter and merge
     lines
@@ -429,6 +362,8 @@ export class Chart5Component implements OnInit, OnChanges{
       
       .style('stroke-width', '2')
       .merge(lines)
+      .transition()
+      .duration(500)
       // 'd' has a name and data
       .attr('d', (d) => this.line(d.data))
       .style('stroke', (d)  => this.colors(d.name))

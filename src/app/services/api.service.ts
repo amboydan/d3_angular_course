@@ -26,7 +26,7 @@ export class ApiService {
       .pipe(
         retry(3)
         // do not need to map this data because if we do it will create only columns in the set
-        //map((answer) => answer.data)
+        // map((answer) => answer.data)
       );
   }
   
@@ -59,6 +59,11 @@ export class ApiService {
   getCovidData(): Observable<any> {
     const url = 'https://api.covidtracking.com/v1/us/daily.json'
     //getParsedDate is not necessary below because we are already recieving a json file
+    return this.getJson(url);
+  }
+
+  getBrowsersData(): Observable<any> {
+    const url = 'assets/browsers.json';
     return this.getJson(url);
   }
 }

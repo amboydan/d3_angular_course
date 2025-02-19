@@ -29,6 +29,8 @@ export class AppComponent implements OnInit{
 
   covidData$: Observable<any>;
 
+  browsers$: Observable<any>;
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
@@ -38,10 +40,13 @@ export class AppComponent implements OnInit{
     this.data2$ = this.api.getEmployees();
     this.iris$ = this.api.getIris();
     this.covidData$ = this.api.getCovidData();
+    this.browsers$ = this.api.getBrowsersData();
 
-    //this.covidData$.subscribe(res => console.log(res));
-
-    //console.log(this.data2$.subscribe(res => console.log(res)));
+    // can get the response from an api call through a subscription
+    //this.data2$.subscribe(c => console.log(c));
+     this.browsers$.subscribe(c => console.log(c));
+    // this.covidData$.subscribe(res => console.log(res));
+    // console.log(this.data2$.subscribe(res => console.log(res)));
     setTimeout(
       () => {
         this.data1 = [...this.data1, 95]; }

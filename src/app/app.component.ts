@@ -5,16 +5,20 @@ import { Chart2Component } from './charts/chart2/chart2.component';
 import { Chart3Component } from './charts/chart3/chart3.component';
 import { Chart4Component } from './charts/chart4/chart4.component';
 import { Chart5Component } from './charts/chart5/chart5.component';
+import { Chart6Component } from './charts/chart6/chart6.component';
 import { ApiService } from './services/api.service';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
+import { map } from 'rxjs/operators';
+import { IPieData } from './interfaces/chart.interfaces';
+import { PieHelper } from './helpers/pie.helper';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [Chart1Component, Chart2Component, 
     CommonModule, Chart3Component, Chart4Component,
-    Chart5Component],
+    Chart5Component, Chart6Component],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -30,6 +34,13 @@ export class AppComponent implements OnInit{
   covidData$: Observable<any>;
 
   browsers$: Observable<any>;
+  browser: any;
+
+  // remembering that IPieData was defined in the interfaces folder chart.interfaces.ts
+  pieData: IPieData = {
+    title: '',
+    data: []
+  }
 
   constructor(private api: ApiService) {}
 
@@ -42,9 +53,14 @@ export class AppComponent implements OnInit{
     this.covidData$ = this.api.getCovidData();
     this.browsers$ = this.api.getBrowsersData();
 
+    this.browsers$.subscribe((data) => {
+      this.browser = data;
+      this.setPieData('now'); // this will return an error if you do not fix setPieData if then below
+      console.log(this.pieData);
+    })
     // can get the response from an api call through a subscription
     // this.data2$.subscribe(c => console.log(c));
-     this.browsers$.subscribe(c => console.log(c));
+    // this.browsers$.subscribe(c => console.log(c));
     // this.covidData$.subscribe(res => console.log(res));
     // console.log(this.data2$.subscribe(res => console.log(res)));
     setTimeout(
@@ -53,4 +69,31 @@ export class AppComponent implements OnInit{
       ,5000
     )
   }
+
+  // THE BELOW IS NOW BEING TAKEN CARE OF WITH THE HELPER FUNCTION (MORE GENERIC FOR "REUSE")
+  // convertBrowserToPieData(valueAttr: string) {
+  //   const data = this.browser.map((elem: any) => ({
+  //     id: elem.name,
+  //     label: elem.name,
+  //     value: elem[valueAttr] // this process is very important! we define browser
+  //     // and then we define pieData up top.  this.browser will equal the full data set 
+  //     // and the pieData will equal the browser data that is determined by which value we
+  //     // are toggleing (before or after).  
+  //   }));
+
+  //   return {
+  //     title: "Browser market share",
+  //     data
+  //   }
+  // }
+
+  setPieData(event) {
+    const valueAttr = typeof event === 'string' ? event : event.target.value;
+    // utilizing the helper function for MORE GENERIC USE OR "REUSE"
+    // change from this => this.pieData = this.convertBrowserToPieData(valueAttr);
+    // to this =>
+    this.pieData = PieHelper.convert(this.browser, "Browser market share", valueAttr, 'name', 'name');
+    // look at the helper pop up to remember what goes where in the function convert
+  }
+
 }

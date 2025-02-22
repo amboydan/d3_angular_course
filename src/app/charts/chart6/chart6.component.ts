@@ -23,6 +23,7 @@ export class Chart6Component implements OnInit, OnChanges{
   arc: any;
   pie: any;
   colors: any;
+  arcTween: any;
 
   @Input() data: IPieData;
 
@@ -143,6 +144,19 @@ export class Chart6Component implements OnInit, OnChanges{
     // color scale
     this.colors = d3.scaleOrdinal(d3.schemeCategory10)
       .domain(this.ids)
+
+    const chart = this;
+
+    this.arcTween = function(d) {
+      console.log(this);
+      const current = d;
+      const previous = this._previous; // if the previous state is available
+      const interpolate = d3.interpolate(previous, current);
+      this._previous = current;
+      return function(t) {
+        return chart.arc(interpolate(t));
+      }
+    }
   }
 
   setLabels() {
@@ -155,27 +169,46 @@ export class Chart6Component implements OnInit, OnChanges{
     const data = this.pieData;
     // Remember the update pattern: bind the data, enter / update, exit / remove
     // 1. Bind the data
-    const arcs = this.dataContainer
-      .selectAll('path.data')
-      // each arc is a path with class data and then we bind to the data
-      .data(data);
+    // const arcs = this.dataContainer
+    //   .selectAll('path.data')
+    //   // each arc is a path with class data and then we bind to the data
+    //   .data(data);
 
     // example: the below is the equivalent of the 'merge' in the Enter / Update section
     // arcs.attr('d', this.arc)
     //  .style('fill', (d) => this.colors(d.data.id));
-    
-    // 2. Enter / Update
-    arcs.enter()
-      .append('path')
-      .attr('class', 'data')
-      // when you change the data you want to add the new values and remove the old
-      .merge(arcs)
-      .attr('d', this.arc)
-      .style('fill', (d) => this.colors(d.data.id));
 
-    // 3. Exit / Remove: remove all those arcs that are no longer present
-    arcs.exit().remove();
+    // 2. Enter / Update: the below is the "FULL" update pattern. At bottom is the JOIN method
+    // arcs.enter()
+    //   .append('path')
+    //   .attr('class', 'data')
+    //   // when you change the data you want to add the new values and remove the old
+    //   .merge(arcs)
+    //   .attr('d', this.arc)
+    //   .style('fill', (d) => this.colors(d.data.id));
 
+    // // 3. Exit / Remove: remove all those arcs that are no longer present
+    // arcs.exit().remove();
+
+    // create a 'hook'
+    // const chart = this;
+
+    this.dataContainer  
+      .selectAll('path.data')
+      .data(data, d => d.data.id)
+      .join('path')
+        // you must enter the path classes again or else additional paths will be added without
+        // removeing the previous.  
+        .attr('class', 'data')
+        .style('fill', (d) => this.colors(d.data.id))
+        // github.com/d3/d3-transition: understand the strange transition
+        // we need to creat a custom interporlator because currently it is a string
+        // For us, we need to interpolate the start and end angle (d3-interpolate). 
+        .transition()
+        .duration(1000)
+        // no longer using this because have the interpolator actions
+        // .attr('d', this.arc);
+        .attrTween('d', this.arcTween);
   }
 
   highlight() {}

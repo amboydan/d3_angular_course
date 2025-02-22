@@ -56,7 +56,7 @@ export class AppComponent implements OnInit{
     this.browsers$.subscribe((data) => {
       this.browser = data;
       this.setPieData('now'); // this will return an error if you do not fix setPieData if then below
-      console.log(this.pieData);
+      // console.log(this.pieData);
     })
     // can get the response from an api call through a subscription
     // this.data2$.subscribe(c => console.log(c));

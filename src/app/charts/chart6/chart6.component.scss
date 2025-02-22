@@ -1,0 +1,20 @@
+.chart6 {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    
+    text.title {
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .legend-item  {
+        cursor: pointer;
+        // The & always refers to the parent selector when nesting. 
+        // Think of the & as being removed and replaced with the parent selector.
+        &:hover {
+            font-weight: bold;
+        }
+    }
+}

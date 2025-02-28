@@ -3,6 +3,8 @@ import { Component, ElementRef, Input, OnInit, OnChanges, SimpleChanges, ViewEnc
 import * as d3 from 'd3';
 import { IPieConfig, IPieData } from '../../interfaces/chart.interfaces';
 import { PieHelper } from '../../helpers/pie.helper';
+import { startWith } from 'rxjs';
+import ObjectHelper from '../../helpers/object.helper';
 
 @Component({
   selector: 'app-chart6',
@@ -37,7 +39,21 @@ export class Chart6Component implements OnInit, OnChanges{
 
   @Input() data: IPieData;
 
-  config: IPieConfig = {
+  @Input() set config(values){
+    // if you only want to change certain values of the config file then below.  However, Object.assign only
+    // creates a shallow copy of the object.  the embeded arc properties will not show up
+    this._config = ObjectHelper.UpdateObjectWithPartialValues<IPieConfig>(this._defaultConfig, values);
+  };
+
+  get config() {
+    return this._config || this._defaultConfig;
+  };
+
+  /**the config file gets turned into an @Input because we want the chart to be reusable.  If you duplicate the 
+   * chart and leave this config variable and then change the variable all of the instances of the chart will change.
+   */
+  private _config: IPieConfig;
+  private _defaultConfig: IPieConfig = {
     innerRadiusCoef: 0.6,
     hiddenOpacity: 0.3,
     legendItem: {
@@ -162,7 +178,7 @@ export class Chart6Component implements OnInit, OnChanges{
 
     const chart = this;
 
-    this.arcTween = function(d) {
+    this.arcTween = function(d: any) {
       //console.log(this);
       const current = d;
       const parent: any = this
@@ -220,37 +236,21 @@ export class Chart6Component implements OnInit, OnChanges{
       .attr('transform', `translate(${this.dimensions.width - this.margins.right}, ${this.margins.top + 0.5 * this.innerHeight - 0.5 * dimensions.height})`)
   }
 
-  extendPreviousDataWithEnter = (previous, current) => {
-
-    const previousIds = new Set(previous.map((d) => d.data.id));
-    const beforeEndAngle = (id) => previous.find((d) => d.data.id === id)?.endAngle || 0; 
-    // get new elemnts (the enter selection)
-    // elements belonging to current that don't belong to previous
-    const newElements = current.filter((elem) => !previousIds.has(elem.data.id))
-      .map((elem) => {
-        const before = current.find((d) => d.index === elem.index -1);
-
-        // get end angle of the previous element in the prevoius data
-        const angle = beforeEndAngle(before?.data?.id) // if you don't have the ? on the first when doesn't exist you will get an error
-
-        return {
-          ...elem,
-          startAngle: angle,
-          endAngle: angle
-        };
-      });
-
-      return [...previous, ...newElements]
-  }
-
   draw() {
+    const chart = this;
     const data = this.pieData;
 
     const  previousData = this.dataContainer
       .selectAll('path.data')
       .data();
 
-    const extendedPreviousData = this.extendPreviousDataWithEnter(previousData, data);
+    const extendedPreviousData = PieHelper.ExtendPreviousDataWithEnter(previousData, data);
+    const extendedCurrentData = PieHelper.ExtendCurrentDataWithExit(previousData, data);
+    
+    const enterArcTween = PieHelper.ArcTweenFactory(extendedPreviousData, true, this.arc);
+
+    const exitArcTween = PieHelper.ArcTweenFactory(extendedCurrentData, false, this.arc);
+
     // Remember the update pattern: bind the data, enter / update, exit / remove
     // 1. Bind the data
     // const arcs = this.dataContainer
@@ -280,13 +280,22 @@ export class Chart6Component implements OnInit, OnChanges{
     this.dataContainer  
       .selectAll('path.data')
       .data(data, d => d.data.id)
-      .join('path')
+      .join(
+        enter => enter.append('path'),
+        update => update,
+        exit => exit.transition()
+          .duration(1000)
+          .attrTween('d', exitArcTween)
+          .remove()
+        )
         // you must enter the path classes again or else additional paths will be added without
         // removeing the previous.  
         .attr('class', 'data')
         .style('fill', (d) => this.colors(d.data.id))
         .style('stroke', this.config.arcs.stroke)
         .style('stroke-width', this.config.arcs.strokeWidth)
+        .on('mouseenter', (event, d) => this.setHighlight(d.data.id))
+        .on('mouseleave', (event, d) => this.resetHighlight())
         // github.com/d3/d3-transition: understand the strange transition
         // we need to creat a custom interporlator because currently it is a string
         // For us, we need to interpolate the start and end angle (d3-interpolate). 
@@ -294,7 +303,7 @@ export class Chart6Component implements OnInit, OnChanges{
         .duration(1000)
         // no longer using this because have the interpolator actions
         // .attr('d', this.arc);
-        .attrTween('d', this.arcTween);
+        .attrTween('d', enterArcTween);
   }
 
   setHighlight(id) {

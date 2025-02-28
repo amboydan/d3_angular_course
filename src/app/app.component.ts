@@ -10,7 +10,7 @@ import { ApiService } from './services/api.service';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { map } from 'rxjs/operators';
-import { IPieData } from './interfaces/chart.interfaces';
+import { IPieData, IPieConfig } from './interfaces/chart.interfaces';
 import { PieHelper } from './helpers/pie.helper';
 
 @Component({
@@ -40,7 +40,16 @@ export class AppComponent implements OnInit{
   pieData: IPieData = {
     title: '',
     data: []
-  }
+  };
+
+  pieConfig = {};
+
+  pieConfig2 = {
+    innerRadiusCoef: 0,
+    arcs: {
+      radius: 5
+    }
+  };
 
   constructor(private api: ApiService) {}
 

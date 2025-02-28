@@ -39,7 +39,7 @@
           <option value = 'now' selected>now</option>
           <option value = 'before'>before</option>
         </select>
-        <app-chart6 [data]="pieData"></app-chart6><!--no longer need the async function because pieData is ....-->
+        <app-chart6 [data]="pieData" [config]="pieConfig"></app-chart6><!--no longer need the async function because pieData is ....-->
       </div>
     </div>
   </div>
@@ -51,7 +51,9 @@
       <div class="chart"></div>
     </div>
     <div class="col-4">
-      <div class="chart"></div>
+      <div class="chart">
+        <app-chart6 [data]="pieData" [config]="pieConfig2"></app-chart6>
+      </div>
     </div>
   </div>
 </div>

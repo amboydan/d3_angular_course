@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 //import { RouterOutlet } from '@angular/router';
 import { Chart1Component } from "./charts/chart1/chart1.component";
 import { Chart2Component } from './charts/chart2/chart2.component';
@@ -7,12 +8,20 @@ import { Chart4Component } from './charts/chart4/chart4.component';
 import { Chart5Component } from './charts/chart5/chart5.component';
 import { Chart6Component } from './charts/chart6/chart6.component';
 import { Chart7Component } from './charts/chart7/chart7.component';
+//
 import { ApiService } from './services/api.service';
+//
 import { Observable } from 'rxjs';
-import { CommonModule } from '@angular/common';
 import { map } from 'rxjs/operators';
-import { IPieData, IPieConfig } from './interfaces/chart.interfaces';
+//
+import { IPieData, IPieConfig, IGroupStackData, IGroupStackDataElem, IGroupStackConfig } from './interfaces/chart.interfaces';
+//
 import { PieHelper } from './helpers/pie.helper';
+import { StackHelper } from './helpers/stack.helper';
+//
+import * as d3 from 'd3';
+
+
 
 @Component({
   selector: 'app-root',
@@ -56,6 +65,8 @@ export class AppComponent implements OnInit{
   population$: Observable<any>;
   population: any;
 
+  stackedData: IGroupStackData;
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
@@ -78,9 +89,17 @@ export class AppComponent implements OnInit{
     // this.browsers$.subscribe(c => console.log(c));
     // this.covidData$.subscribe(res => console.log(res));
     // console.log(this.data2$.subscribe(res => console.log(res)));
+    
     this.population$.subscribe((data) => {
       this.population = data;
-      console.log(this.population);
+      const stacks = StackHelper.SetStacks(data, 'year', 'gender', 'age_group', 'value');
+      
+      this.stackedData = {
+        title: ' Population by Year, Gender, age group (in millions)',
+        yLabel: 'Population (millions)',
+        unit: 'million',
+        data: stacks
+      }
     })
 
     setTimeout(

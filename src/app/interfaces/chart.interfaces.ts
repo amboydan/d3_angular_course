@@ -35,3 +35,25 @@ export interface IPieConfig {
     };
     margins: IChartMargins;
 }
+
+
+export interface IGroupStackDataElem {
+    key?: string;
+    domain: string;
+    group: string;
+    stack: string;
+    value: string;
+}
+
+export interface IGroupStackData {
+    title: string;
+    yLabel: string;
+    unit: string;
+    data: IGroupStackDataElem[];
+}
+
+export interface IGroupStackConfig {
+    hiddenOpacity: number;
+    transition: number;
+    margins: IChartMargins;
+}

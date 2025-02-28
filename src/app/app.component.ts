@@ -6,6 +6,7 @@ import { Chart3Component } from './charts/chart3/chart3.component';
 import { Chart4Component } from './charts/chart4/chart4.component';
 import { Chart5Component } from './charts/chart5/chart5.component';
 import { Chart6Component } from './charts/chart6/chart6.component';
+import { Chart7Component } from './charts/chart7/chart7.component';
 import { ApiService } from './services/api.service';
 import { Observable } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -18,7 +19,7 @@ import { PieHelper } from './helpers/pie.helper';
   standalone: true,
   imports: [Chart1Component, Chart2Component, 
     CommonModule, Chart3Component, Chart4Component,
-    Chart5Component, Chart6Component],
+    Chart5Component, Chart6Component, Chart7Component],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -36,6 +37,7 @@ export class AppComponent implements OnInit{
   browsers$: Observable<any>;
   browser: any;
 
+
   // remembering that IPieData was defined in the interfaces folder chart.interfaces.ts
   pieData: IPieData = {
     title: '',
@@ -50,6 +52,9 @@ export class AppComponent implements OnInit{
       radius: 5
     }
   };
+  
+  population$: Observable<any>;
+  population: any;
 
   constructor(private api: ApiService) {}
 
@@ -61,6 +66,7 @@ export class AppComponent implements OnInit{
     this.iris$ = this.api.getIris();
     this.covidData$ = this.api.getCovidData();
     this.browsers$ = this.api.getBrowsersData();
+    this.population$ = this.api.getPopulationData();
 
     this.browsers$.subscribe((data) => {
       this.browser = data;
@@ -72,6 +78,11 @@ export class AppComponent implements OnInit{
     // this.browsers$.subscribe(c => console.log(c));
     // this.covidData$.subscribe(res => console.log(res));
     // console.log(this.data2$.subscribe(res => console.log(res)));
+    this.population$.subscribe((data) => {
+      this.population = data;
+      console.log(this.population);
+    })
+
     setTimeout(
       () => {
         this.data1 = [...this.data1, 95]; }

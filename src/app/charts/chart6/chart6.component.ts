@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, Input, OnInit, OnChanges, SimpleChanges, ViewEncapsulation, ɵsetCurrentInjector} from '@angular/core';
+import { Component, ElementRef, Input, OnInit, OnChanges, SimpleChanges, ViewEncapsulation} from '@angular/core';
 import * as d3 from 'd3';
 import { IPieConfig, IPieData } from '../../interfaces/chart.interfaces';
 import { PieHelper } from '../../helpers/pie.helper';
@@ -325,7 +325,6 @@ export class Chart6Component implements OnInit, OnChanges{
   toggleHighlight(id: any): void {
     this.hiddenIds.has(id) ? this.hiddenIds.delete(id) : this.hiddenIds.add(id);
     this.updateChart();
-    console.log(this.hiddenIds);
   }
 
   updateChart() {

@@ -72,4 +72,10 @@ export class ApiService {
       //map((answer) => answer.data)
     //)
   }
+
+    // get the population data from the assets folder
+    getPopulationData(): Observable<any> {
+      const url = 'assets/population.csv'
+      return this.getParsedData(url);
+    }
 }

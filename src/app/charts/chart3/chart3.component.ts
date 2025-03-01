@@ -91,6 +91,7 @@ export class Chart3Component implements OnInit, OnChanges{
     this.dimensions = this.svg.node().getBoundingClientRect();
     this.innerWidth = this.dimensions.width - this.left - this.right;
     this.innerHeight = this.dimensions.height - this.top - this.bottom;
+    this.svg.attr('viewBox', [0, 0, this.dimensions.width, this.dimensions.height])
   };
 
   ngOnChanges(changes: SimpleChanges) {

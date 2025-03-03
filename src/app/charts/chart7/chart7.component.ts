@@ -3,6 +3,7 @@ import { StackHelper } from '../../helpers/stack.helper';
 import * as d3 from 'd3';
 import { IGroupStackConfig } from '../../interfaces/chart.interfaces';
 import ObjectHelper from '../../helpers/object.helper';
+import { ChartDimensions } from '../../helpers/chart.dimentions.helper';
 
 
 @Component({
@@ -16,6 +17,8 @@ export class Chart7Component implements OnInit, OnChanges{
 
   host: any;
   svg: any;
+
+  dimensions: ChartDimensions;
 
   @Input() data;
 

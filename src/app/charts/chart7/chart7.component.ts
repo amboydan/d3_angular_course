@@ -122,7 +122,27 @@ export class Chart7Component implements OnInit, OnChanges{
 
   }
 
-  setParams(): void {}
+  setParams(): void {
+    // xScale
+    this.setXScale();
+    // yScale
+    this.setYScale();
+    // groupscale
+    this.setGroupScale();
+    //colorscale
+    this.setColorScale();
+  }
+
+  setXScale(): void {}
+
+  setYScale(): void {}
+
+  setGroupScale(): void {}
+
+  setColorScale(): void {}
+
+
+
   setLabels(): void {}
   setAxis(): void {}
   setLegend(): void {}

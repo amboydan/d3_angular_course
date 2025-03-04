@@ -56,10 +56,7 @@ export class AppComponent implements OnInit{
   pieConfig = {};
 
   pieConfig2 = {
-    innerRadiusCoef: 0,
-    arcs: {
-      radius: 5
-    }
+    innerRadiusCoef: 0
   };
   
   population$: Observable<any>;

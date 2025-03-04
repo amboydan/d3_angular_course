@@ -57,3 +57,4 @@ export interface IGroupStackConfig {
     transition: number;
     margins: IChartMargins;
 }
+

@@ -1,24 +1,31 @@
 import * as d3 from 'd3';
-import { IChartMargins, IGroupStackDataElem } from '../interfaces/chart.interfaces';
+import { IGroupStackDataElem } from '../interfaces/chart.interfaces';
 
 export class StackHelper {
-    static SetStacks<T>(data: T[], domainAttr: string, groupAttr: string, stackAttr: string, valueAttr: string): IGroupStackDataElem[] {
-       
-        const calcKey = (elem): string => {
-          const removeUndefined = (d) => d === undefined ? '' : '__' + d;
-          return elem[0] + removeUndefined(elem[1]) + removeUndefined(elem[2])
-        }
-    
-        const group = d3.flatRollup(data, v => d3.sum(v, d => d[valueAttr]), d => d[domainAttr], d => d[groupAttr], d => d[stackAttr])
-          .map((elem) => ({
+    static SetStacks<T>(
+        data: T[],
+        domainAttr: keyof T,
+        groupAttr: keyof T,
+        stackAttr: keyof T,
+        valueAttr: keyof T,
+        valueFormatter = (value: any) => value
+    ): IGroupStackDataElem[] {
+        const calcKey = (elem: any): string => {
+            const removeUndefined = (d: any) => d === undefined ? '' : '__' + d;
+            return elem[0] + removeUndefined(elem[1]) + removeUndefined(elem[2]);
+        };
+        return d3.flatRollup(
+            data,
+            (v: any) => d3.sum(v, (d: any) => d[valueAttr]),
+            (d: any) => d[domainAttr],
+            (d: any) => d[groupAttr],
+            (d: any) => d[stackAttr]
+        ).map((elem) => ({
             key: calcKey(elem),
             domain: elem[0],
             group: elem[1] || null,
             stack: elem[2] || null,
-            value: elem[3]
-          }))
-
-        return group;
-      }
-
+            value: valueFormatter(elem[3]),
+        }));
+    }
 }

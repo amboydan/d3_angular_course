@@ -20,21 +20,36 @@ export class Chart7Component implements OnInit, OnChanges{
 
   dimensions: ChartDimensions;
 
+  // axis
+  xAxis: any;
+  yAxis: any;
+
+  // containers
+  xAxisContainer: any;
+  yAxisContainer: any;
+  dataContainer: any;
+  legendContainer: any;
+  tooltipContainer: any;
+
+  // labels
+  title: any;
+  yLabel: any;
+
   @Input() data;
 
   @Input() set config(values) {
     this._config = ObjectHelper.UpdateObjectWithPartialValues(this._defaultConfig, values);
   };
 
-  get config() {
-    if(!this._config) {
-      this.config = this._defaultConfig;
+  get config(): IGroupStackConfig {
+    if (!this._config) {
+        this.config = this._defaultConfig;
     }
-
-    return this.config;
+    
+    return this._config;
   }
   
-  private _config: IGroupStackConfig;
+  private _config: IGroupStackConfig = null as any;
 
   private _defaultConfig: IGroupStackConfig = {
       hiddenOpacity: 0.3,
@@ -67,8 +82,45 @@ export class Chart7Component implements OnInit, OnChanges{
     this.updateChart();
   }
 
-  setDimensions(): void{}
-  setElements(): void {}
+  setDimensions(): void{
+    // on every new chart this is the command that we need to define.
+    this.dimensions = new ChartDimensions(this.svg.node().getBoundingClientRect(), this.config.margins)
+  }
+  setElements(): void {
+    this.xAxisContainer = this.svg.append('g')
+      .attr('class', 'xAxisContainer')
+      .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginBottom})`)
+    
+    this.yAxisContainer = this.svg.append('g')
+      .attr('class', 'yAxisContainer')
+      .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginTop})`)
+
+    this.dataContainer = this.svg.append('g')
+      .attr('class', 'dataContainer')
+      .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginTop})`)
+
+    this.legendContainer = this.svg.append('g')
+      .attr('class', 'legendContainer')
+      .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginBottom + 30})`)
+
+    this.title = this.svg.append('g')
+      .attr('class', 'titleContainer')
+      .attr('transform', `translate(${this.dimensions.midWidth}, ${this.dimensions.midMarginTop})`)
+      .append('text')
+      .attr('class', 'title')
+      .style('text-anchor', 'middle');
+
+    this.yLabel = this.svg.append('g')
+      .attr('class', 'yLabelContainer')
+      .attr('transform', `translate(${this.dimensions.marginLeft - 30}, ${this.dimensions.marginTop})`)
+      .append('text')
+      .attr('class', 'yLabel')
+      .style('text-anchor', 'middle')
+      .attr('transform', 'rotate(-90)');
+
+    // tooltip
+
+  }
 
   setParams(): void {}
   setLabels(): void {}

@@ -96,4 +96,5 @@ export class ChartDimensions {
     get midInnerHeight(): number {
         return this.margins.top + 0.5 * this.innerHeight;
     }
+    
 }

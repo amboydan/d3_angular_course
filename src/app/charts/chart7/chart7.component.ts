@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { StackHelper } from '../../helpers/stack.helper';
 import * as d3 from 'd3';
-import { IGroupStackConfig } from '../../interfaces/chart.interfaces';
+import { IGroupStackConfig, IGroupStackData } from '../../interfaces/chart.interfaces';
 import ObjectHelper from '../../helpers/object.helper';
 import { ChartDimensions } from '../../helpers/chart.dimentions.helper';
 import { MinValidator } from '@angular/forms';
@@ -44,6 +44,13 @@ export class Chart7Component implements OnInit, OnChanges{
   // scales
   scales: any = {};
 
+  private _defaultData: IGroupStackData = {
+    title: '',
+    yLabel: '',
+    unit: '',
+    data: []
+  };
+  
   @Input() data;
 
   @Input() set config(values) {
@@ -208,7 +215,21 @@ export class Chart7Component implements OnInit, OnChanges{
     this.title.text(this.data?.title);
     this.yLabel.text(this.data?.yLabel);
   }
-  setAxis(): void {}
+  
+  setAxis(): void {
+    this.setXAxis();    
+    this.setYAxis();
+  }
+
+  setXAxis(): void {
+    this.xAxis = d3.axisBottom(this.scales.x);
+    this.xAxisContainer.call(this.xAxis);
+  }
+  setYAxis(): void {
+    this.yAxis = d3.axisLeft(this.scales.y);
+    this.yAxisContainer.call(this.yAxis);
+  }
+   
   setLegend(): void {}
   draw(): void {}
 

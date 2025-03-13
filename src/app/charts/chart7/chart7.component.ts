@@ -50,6 +50,8 @@ export class Chart7Component implements OnInit, OnChanges{
     unit: '',
     data: []
   };
+
+  stackedData: any;
   
   @Input() data;
 
@@ -222,16 +224,68 @@ export class Chart7Component implements OnInit, OnChanges{
   }
 
   setXAxis(): void {
-    this.xAxis = d3.axisBottom(this.scales.x);
+    this.xAxis = d3.axisBottom(this.scales.x)
+    .tickSizeOuter(0);
+
     this.xAxisContainer.call(this.xAxis);
   }
   setYAxis(): void {
-    this.yAxis = d3.axisLeft(this.scales.y);
+    this.yAxis = d3.axisLeft(this.scales.y)
+      .ticks(5)
+      .tickSizeOuter(0)
+      .tickSizeInner(-this.dimensions.innerWidth);
+
     this.yAxisContainer.call(this.yAxis);
+
+    this.yAxisContainer.selectAll('.tick line')
+      .style('opacity', 0.3)
+      .style('stroke-dasharray', '3 3');
   }
    
   setLegend(): void {}
-  draw(): void {}
+  draw(): void {
+    this.setStackedData();
+    this.drawRectangles();
+  }
+
+  setStackedData(): void {
+    const data = this.data.data;
+    const groupedData = d3.groups(data, d => d.domain + '_' + d.group);
+
+    const keys = d3.groups(data, d => d.stack).map((d) => d[0])
+    console.log(keys);
+
+    const stack = d3.stack()
+      .keys(keys)
+      .value((element, key) => element[1].find(d => d.stack === key).value);
+
+    this.stackedData = stack(groupedData);
+
+    console.log(this.stackedData);
+  }
+
+  drawRectangles(): void {
+    const data = this.stackedData;
+    const colors = d3.schemeCategory10;
+
+    this.dataContainer.selectAll('g.series')
+      .data(data, d => d.key)
+      .join('g')
+      .attr('class', 'series')
+      .style('fill', (d, i) => this.scales.color(i))
+      .selectAll('rect.data')
+      .data(d => d, d => d.data.year)
+      .join('rect')
+      .attr('class', 'data')
+      .attr('x', d => {
+        const [domain, group] = d.data[0].split('_');
+        return this.scales.x(domain) + this.scales.group(group);
+        })
+      .attr('width', this.scales.group.bandwidth())
+      .attr('y', (d) => this.scales.y(d[1]))
+      .attr('height', (d) => Math.abs(this.scales.y(d[0]) - this.scales.y(d[1])))
+      .attr('stroke', 'white');
+  }
 
   updateChart(): void {
     this.setParams()

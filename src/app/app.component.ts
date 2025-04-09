@@ -75,7 +75,10 @@ export class AppComponent implements OnInit{
     this.covidData$ = this.api.getCovidData();
     this.browsers$ = this.api.getBrowsersData();
     this.population$ = this.api.getPopulationData();
-    this.population$.subscribe((c) => console.log(c));
+    this.population$.subscribe(data => {
+      this.population = data;
+      this.setStacks();
+    });
 
     this.browsers$.subscribe((data) => {
       this.browser = data;
@@ -107,30 +110,21 @@ export class AppComponent implements OnInit{
     )
   }
 
-  // THE BELOW IS NOW BEING TAKEN CARE OF WITH THE HELPER FUNCTION (MORE GENERIC FOR "REUSE")
-  // convertBrowserToPieData(valueAttr: string) {
-  //   const data = this.browser.map((elem: any) => ({
-  //     id: elem.name,
-  //     label: elem.name,
-  //     value: elem[valueAttr] // this process is very important! we define browser
-  //     // and then we define pieData up top.  this.browser will equal the full data set 
-  //     // and the pieData will equal the browser data that is determined by which value we
-  //     // are toggleing (before or after).  
-  //   }));
-
-  //   return {
-  //     title: "Browser market share",
-  //     data
-  //   }
-  // }
-
-  setPieData(event) {
+   setPieData(event) {
     const valueAttr = typeof event === 'string' ? event : event.target.value;
     // utilizing the helper function for MORE GENERIC USE OR "REUSE"
     // change from this => this.pieData = this.convertBrowserToPieData(valueAttr);
     // to this =>
     this.pieData = PieHelper.convert(this.browser, "Browser market share", valueAttr, 'name', 'name');
     // look at the helper pop up to remember what goes where in the function convert
+  }
+
+  setStacks() {
+    console.log(d3, this.population);
+
+    const group = d3.groups(this.population, d => d.year, d => d.gender, d => d.age_group);
+
+    console.log(group);
   }
 
 }

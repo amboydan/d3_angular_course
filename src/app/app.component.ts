@@ -75,6 +75,7 @@ export class AppComponent implements OnInit{
     this.covidData$ = this.api.getCovidData();
     this.browsers$ = this.api.getBrowsersData();
     this.population$ = this.api.getPopulationData();
+    this.population$.subscribe((c) => console.log(c));
 
     this.browsers$.subscribe((data) => {
       this.browser = data;

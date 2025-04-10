@@ -77,19 +77,21 @@ export class AppComponent implements OnInit{
     this.population$ = this.api.getPopulationData();
     this.population$.subscribe(data => {
       this.population = data;
-      this.setStacks();
+      const stacks = StackHelper.SetStacks(this.population, 'year', 'gender', 'age_group', 'value');
+
+      this.stackedData = {
+        title: ' Population by year, gender and age group (in millions)',
+        yLabel: 'Population (millions)',
+        unit: 'million',
+        data: stacks
+      }
     });
 
     this.browsers$.subscribe((data) => {
       this.browser = data;
-      this.setPieData('now'); // this will return an error if you do not fix setPieData if then below
-      // console.log(this.pieData);
+      this.setPieData('now'); 
     })
-    // can get the response from an api call through a subscription
-    // this.data2$.subscribe(c => console.log(c));
-    // this.browsers$.subscribe(c => console.log(c));
-    // this.covidData$.subscribe(res => console.log(res));
-    // console.log(this.data2$.subscribe(res => console.log(res)));
+
     
     this.population$.subscribe((data) => {
       this.population = data;
@@ -117,14 +119,6 @@ export class AppComponent implements OnInit{
     // to this =>
     this.pieData = PieHelper.convert(this.browser, "Browser market share", valueAttr, 'name', 'name');
     // look at the helper pop up to remember what goes where in the function convert
-  }
-
-  setStacks() {
-    console.log(d3, this.population);
-
-    const group = d3.groups(this.population, d => d.year, d => d.gender, d => d.age_group);
-
-    console.log(group);
   }
 
 }

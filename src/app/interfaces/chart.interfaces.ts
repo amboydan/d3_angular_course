@@ -42,7 +42,7 @@ export interface IGroupStackDataElem {
     domain: string;
     group: string;
     stack: string;
-    value: string;
+    value: number;
 }
 
 export interface IGroupStackData {

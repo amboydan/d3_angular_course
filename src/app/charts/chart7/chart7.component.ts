@@ -41,6 +41,8 @@ export class Chart7Component implements OnInit, OnChanges{
   title: any;
   yLabel: any;
 
+  // scales
+  scales: any = {};
 
 @Input() data;
 @Input() set config(values) {
@@ -115,9 +117,31 @@ private _defaultConfig: IGroupStackConfig = {
       .attr('transform', 'rotate(-90)');
 
     //tooltip
-    
+
   }
-  setParams(): void {}
+  setParams(): void {
+    // xScale
+    this.setXScale();
+    // yScale
+    this.setYScale();
+    // groupScale
+    this.setGroupScale();
+    // colorScale
+    this.setColorScale();
+  }
+
+  setXScale(): void {
+    const domain = Array.from(new Set((this.data?.data || []).map((d) => d.domain ))).sort(d3.ascending);
+
+    const range = [0, this.dimensions.innerWidth];
+
+    this.scales.x = d3.scaleBand().domain(domain).range(range);
+  }
+  setYScale(): void {}
+  setGroupScale(): void {}
+  setColorScale(): void {}
+
+
   setLabels(): void {}
   setAxis(): void {}
   setLegend(): void {}

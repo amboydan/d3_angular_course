@@ -59,7 +59,7 @@ export class Chart7Component implements OnInit, OnChanges{
 
 get data() {
   if (!this._data) { this._data = this._defaultData; }
-
+  
   return this._data;
 }
 

@@ -44,7 +44,25 @@ export class Chart7Component implements OnInit, OnChanges{
   // scales
   scales: any = {};
 
-@Input() data;
+ private _defaultData: IGroupStackData = {
+  title: '',
+  yLabel: '',
+  unit: '',
+  data: []
+ } 
+
+ private _data: IGroupStackData;
+
+@Input() set data(values) {
+  this._data = ObjectHelper.UpdateObjectWithPartialValues(this._defaultData, values);
+};
+
+get data() {
+  if (!this._data) { this._data = this._defaultData; }
+
+  return this._data;
+}
+
 @Input() set config(values) {
   this._config = ObjectHelper.UpdateObjectWithPartialValues(this._defaultConfig, values);
 }
@@ -134,16 +152,16 @@ private _defaultConfig: IGroupStackConfig = {
   }
 
   setXScale(): void {
-    const data = (this.data?.data || []);
+    const data = this.data.data;
     
-    const domain = Array.from(new Set((data || []).map((d) => d.domain ))).sort(d3.ascending);
+    const domain = Array.from(new Set(data.map((d) => d.domain ))).sort(d3.ascending);
     const range = [0, this.dimensions.innerWidth];
 
     this.scales.x = d3.scaleBand().domain(domain).range(range);
   }
 
   setYScale(): void {
-    const data = (this.data?.data || []);
+    const data = this.data.data;
 
     const minVal = Math.min(0, d3.min(data, d => d.value));
     const maxVal = d3.max(d3.flatRollup(data, v => d3.sum(v, d => d.value), d => d.domain, d => d.group), d => d[2]);

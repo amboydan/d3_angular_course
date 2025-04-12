@@ -13,7 +13,7 @@ import { MinValidator } from '@angular/forms';
   imports: [],
   template: `<svg class="chart7">
     <style>
-      .chart { font-size: 12px; }
+      .chart7 { font-size: 12px; }
       .chart7 text.title { font-weight: bold;}
     </style>
   </svg>`
@@ -76,7 +76,8 @@ private _defaultConfig: IGroupStackConfig = {
   }
 
   ngOnInit(): void {
-    this.svg = this.host.select('svg');
+    this.svg = this.host.select('svg')
+      .attr('xmlns', "http://www.w3.org/2000/svg");
 
     this.setDimensions();
     this.setElements();
@@ -92,6 +93,7 @@ private _defaultConfig: IGroupStackConfig = {
   setDimensions(): void {
     this.dimensions = new ChartDimensions(this.svg.node().getBoundingClientRect(), this.config.margins);
   }
+
   setElements(): void {
     this.xAxisContainer = this.svg.append('g').attr('class', 'xAxisContainer')
       .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginBottom})`);
@@ -111,7 +113,7 @@ private _defaultConfig: IGroupStackConfig = {
       .style('text-anchor', 'middle');
 
     this.yLabel = this.svg.append('g').attr('class', 'yLabelContainer')
-      .attr('transform', `translate(${this.dimensions.marginLeft - 30}, ${this.dimensions.midMarginTop})`)
+      .attr('transform', `translate(${this.dimensions.marginLeft - 30}, ${this.dimensions.midHeight})`)
       .append('text').attr('class', 'yLabel')
       .style('text-anchor', 'middle')
       .attr('transform', 'rotate(-90)');
@@ -119,6 +121,7 @@ private _defaultConfig: IGroupStackConfig = {
     //tooltip
 
   }
+
   setParams(): void {
     // xScale
     this.setXScale();
@@ -131,19 +134,63 @@ private _defaultConfig: IGroupStackConfig = {
   }
 
   setXScale(): void {
-    const domain = Array.from(new Set((this.data?.data || []).map((d) => d.domain ))).sort(d3.ascending);
-
+    const data = (this.data?.data || []);
+    
+    const domain = Array.from(new Set((data || []).map((d) => d.domain ))).sort(d3.ascending);
     const range = [0, this.dimensions.innerWidth];
 
     this.scales.x = d3.scaleBand().domain(domain).range(range);
   }
-  setYScale(): void {}
-  setGroupScale(): void {}
-  setColorScale(): void {}
 
+  setYScale(): void {
+    const data = (this.data?.data || []);
 
-  setLabels(): void {}
-  setAxis(): void {}
+    const minVal = Math.min(0, d3.min(data, d => d.value));
+    const maxVal = d3.max(d3.flatRollup(data, v => d3.sum(v, d => d.value), d => d.domain, d => d.group), d => d[2]);
+    
+    const domain = [minVal, maxVal];
+    const range = [this.dimensions.innerHeight, 0];
+
+    this.scales.y = d3.scaleLinear().domain(domain).range(range);
+  }
+
+  setGroupScale(): void {
+    const data = (this.data?.data || []);
+
+    const domain = Array.from(new Set(data.map((d) => d.group))).sort(d3.ascending);
+    const range = [0, this.scales.x.bandwidth()];
+    
+    this.scales.group = d3.scaleBand().domain(domain).range(range);
+  }
+
+  setColorScale(): void {
+    const data = (this.data?.data || []);
+    const stacks = Array.from(new Set(data.map((d) => d.stack)));
+    const domain = [stacks.length, 0]; // stacks index
+
+    this.scales.color = d3.scaleSequential(d3.interpolateSpectral).domain(domain);
+  }
+
+  setLabels(): void {
+    this.title.text(this.data?.title);
+    this.yLabel.text(this.data?.yLabel);
+  }
+
+  setAxis(): void {
+    this.setXAxis();
+    this.setYAxis();    
+  }
+
+  setXAxis(): void {
+    this.xAxis = d3.axisBottom(this.scales.x);
+    this.xAxisContainer.call(this.xAxis);
+  }
+
+  setYAxis(): void {
+    this.yAxis = d3.axisLeft(this.scales.y);
+    this.yAxisContainer.call(this.yAxis);
+  }
+
   setLegend(): void {}
   draw(): void {}
 

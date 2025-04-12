@@ -173,7 +173,7 @@ private _defaultConfig: IGroupStackConfig = {
   }
 
   setGroupScale(): void {
-    const data = (this.data?.data || []);
+    const data = this.data.data;
 
     const domain = Array.from(new Set(data.map((d) => d.group))).sort(d3.ascending);
     const range = [0, this.scales.x.bandwidth()];
@@ -182,7 +182,7 @@ private _defaultConfig: IGroupStackConfig = {
   }
 
   setColorScale(): void {
-    const data = (this.data?.data || []);
+    const data = this.data.data;
     const stacks = Array.from(new Set(data.map((d) => d.stack)));
     const domain = [stacks.length, 0]; // stacks index
 
@@ -200,13 +200,22 @@ private _defaultConfig: IGroupStackConfig = {
   }
 
   setXAxis(): void {
-    this.xAxis = d3.axisBottom(this.scales.x);
+    this.xAxis = d3.axisBottom(this.scales.x)
+      .tickSizeOuter(0);
     this.xAxisContainer.call(this.xAxis);
   }
 
   setYAxis(): void {
-    this.yAxis = d3.axisLeft(this.scales.y);
+    this.yAxis = d3.axisLeft(this.scales.y)
+      .ticks(5)
+      .tickSizeOuter(0)
+      .tickSizeInner(-this.dimensions.innerWidth);
+    
     this.yAxisContainer.call(this.yAxis);
+
+    this.yAxisContainer.selectAll('.tick line')
+      .style('opacity', 0.3)
+      .style('stroke-dasharray', '3 3');
   }
 
   setLegend(): void {}

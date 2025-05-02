@@ -15,6 +15,7 @@ import { MinValidator } from '@angular/forms';
     <style>
       .chart7 { font-size: 12px; }
       .chart7 text.title { font-weight: bold;}
+      .chart7 rect { fill: unset; }
     </style>
   </svg>`
 })
@@ -88,10 +89,12 @@ private _defaultConfig: IGroupStackConfig = {
       }
 }
 
-  constructor(element: ElementRef) {
-    this.host = d3.select(element.nativeElement);
-    console.log(this);
-  }
+stackedData: any;
+
+constructor(element: ElementRef) {
+  this.host = d3.select(element.nativeElement);
+  console.log(this);
+}
 
   ngOnInit(): void {
     this.svg = this.host.select('svg')
@@ -219,7 +222,41 @@ private _defaultConfig: IGroupStackConfig = {
   }
 
   setLegend(): void {}
-  draw(): void {}
+  draw(): void {
+    this.setStackedData();
+    this.drawRectangles();
+  }
+
+  setStackedData(): void {
+    const data = this.data1;
+    const stack = d3.stack().keys(["apples", "bananas", "cherries", "dates"]);
+
+    this.stackedData = stack(data);
+    this.stackedData = stack(data);
+
+    console.log(this.stackedData)
+  }
+
+  drawRectangles(): void {
+    const data = this.stackedData;
+    this.scales.y.domain([0, 8000])
+    const colors = d3.schemeCategory10;
+
+    this.dataContainer.selectAll('g.series')
+    .data(data, d => d.key)
+    .join('g')
+    .attr('class', 'series')
+    .style('fill', (d, i) => colors[i])
+    .selectAll('rect.data')
+    .data(d => d, d => d.data.year)
+    .join('rect')
+    .attr('class', 'data')
+    .attr('x', d => this.scales.x(d.data.year + ''))
+    .attr('width', this.scales.x.bandwidth())
+    .attr('y', (d) => this.scales.y(d[1]))
+    .attr('height', (d) => Math.abs(this.scales.y(d[0]) - this.scales.y(d[1])))
+    .attr('stroke', 'white');
+  }
 
   updateChart() {
     this.setParams(); 
@@ -232,5 +269,34 @@ private _defaultConfig: IGroupStackConfig = {
   // tooltip
 
   // highlight
-
+  data1 = [
+    {
+        year: 2002,
+        apples: 3840,
+        bananas: 1920,
+        cherries: 960,
+        dates: 400,
+    },
+    {
+        year: 2003,
+        apples: 1600,
+        bananas: 1440,
+        cherries: 960,
+        dates: 400,
+    },
+    {
+        year: 2004,
+        apples: 640,
+        bananas: 960,
+        cherries: 640,
+        dates: 400,
+    },
+    {
+        year: 2005,
+        apples: 320,
+        bananas: 480,
+        cherries: 640,
+        dates: 400,
+    },
+];
 }

@@ -232,7 +232,7 @@ constructor(element: ElementRef) {
     const data = this.data.data;
     const groupedData = d3.groups(data, d => d.domain + '__' + d.group);
     
-    const keys = d3.groups(data, d => d.stack).map((d) => d[0]);
+    const keys = this.data.stackOrder; //d3.groups(data, d => d.stack).map((d) => d[0]);
     console.log(groupedData, keys);
     const stack = d3.stack()
       .keys(keys)

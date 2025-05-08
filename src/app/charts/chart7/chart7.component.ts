@@ -222,7 +222,68 @@ constructor(element: ElementRef) {
       .style('stroke-dasharray', '3 3');
   }
 
-  setLegend(): void {}
+  setLegend(): void {
+    const data = this.data.stackOrder;
+
+    const width = 35;
+    const height = 12;
+    const fontSize = 10;
+
+    const color = (elem) => this.scales.color(data.indexOf(elem));
+
+    const generateLegendItem = (selection) => {
+      selection.append('rect')
+      .attr('class', 'legend-icon')
+      .attr('width', width)
+      .attr('height', height)
+      .style('fill', (d) => color(d));
+
+      selection.append('text')
+        .attr('class', 'legend-label')
+        .attr('x', 0.5 * width)
+        .attr('y', height + fontSize + 5)
+        .style('font-size', fontSize + 'px')
+        .style('text-anchor', 'middle')
+        .text((d) => d);
+    }
+
+    const updateLegendItem = (selection) => {
+      selection.selectAll('rect.legend-icon')
+      .style('fill', (d) => d.color);
+
+      selection.append('text')
+        .text((d) => d);
+    }
+
+    // set item containers
+    this.legendContainer.selectAll('g.legend-item')
+      .data(data, d => d)
+      .join(
+        enter => enter.append('g')
+          .call(generateLegendItem),
+        update => update
+          .call(updateLegendItem)
+      )
+      .attr('class', 'legend-item')
+
+    // reposition elements
+    // a. reposition legend items
+    let padding = 0;
+
+    this.legendContainer.selectAll('g.legend-item')
+      .each(function() {
+        const g = d3.select(this);
+        g.attr('transform', `translate(${padding}, 0)`);
+
+        padding += g.node().getBBox().width; // if using strict mode need to use BBox
+      })
+    // b. reposition the legend (want in middle of chart)
+    const legendWidth = this.legendContainer.node().getBBox().width;
+
+    const axisHeight = this.xAxisContainer.node().getBBox().height;
+    this.legendContainer  .attr('transform', `translate(${this.dimensions.midWidth - 0.5 * legendWidth}, ${this.dimensions.marginBottom + axisHeight + 10})`)
+  }
+
   draw(): void {
     this.setStackedData();
     this.drawRectangles();

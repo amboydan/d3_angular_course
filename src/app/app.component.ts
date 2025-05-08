@@ -79,12 +79,6 @@ export class AppComponent implements OnInit{
       this.population = data;
       const stacks = StackHelper.SetStacks(this.population, 'year', 'gender', 'age_group', 'value');
 
-      this.stackedData = {
-        title: ' Population by year, gender and age group (in millions)',
-        yLabel: 'Population (millions)',
-        unit: 'million',
-        data: stacks
-      }
     });
 
     this.browsers$.subscribe((data) => {
@@ -101,7 +95,8 @@ export class AppComponent implements OnInit{
         title: ' Population by Year, Gender, age group (in millions)',
         yLabel: 'Population (millions)',
         unit: 'million',
-        data: stacks
+        data: stacks,
+        stackOrder: ['<3', '4', '5-9', '10-14', '15-15', '20-24', '25-29', '30-34', '35-39', '>=40']
       }
     })
 

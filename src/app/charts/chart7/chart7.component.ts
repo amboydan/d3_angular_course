@@ -49,7 +49,8 @@ export class Chart7Component implements OnInit, OnChanges{
   title: '',
   yLabel: '',
   unit: '',
-  data: []
+  data: [],
+  stackOrder: []
  } 
 
  private _data: IGroupStackData;

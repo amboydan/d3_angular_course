@@ -313,8 +313,21 @@ constructor(element: ElementRef) {
 
     this.stackedData = stack(groupedData);
 
-    console.log(this.stackedData)
-  }
+    const aux = this.stackedData
+      .flatMap((v) => v.map((elem) => {
+        //console.log(v, elem);
+        const data = elem.data[1].find((d) => d.stack === v.key);
+        return {
+          index: v.index,
+          key: v.key,
+          min: elem[0],
+          max: elem[1],
+          ...data
+          }
+        })
+      );
+      console.log(aux);
+    }
 
   drawRectangles(): void {
     const data = this.stackedData;
@@ -336,7 +349,8 @@ constructor(element: ElementRef) {
     .attr('width', this.scales.group.bandwidth())
     .attr('y', (d) => this.scales.y(d[1]))
     .attr('height', (d) => Math.abs(this.scales.y(d[0]) - this.scales.y(d[1])))
-    .attr('stroke', 'white');
+    .attr('stroke', 'white')
+    .on('mouseenter', this.tooltip);
   }
 
   updateChart() {
@@ -348,7 +362,19 @@ constructor(element: ElementRef) {
   }
 
   // tooltip
-  
+  tooltip(event: MouseEvent, d: any): void {
+    console.log(arguments);
+    // title 
+
+    // set value 
+
+    // set background
+
+    // resize
+
+    // set position
+
+  }
   // highlight
   data1 = [
     {

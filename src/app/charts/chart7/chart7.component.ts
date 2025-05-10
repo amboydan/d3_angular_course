@@ -12,6 +12,17 @@ import { MinValidator } from '@angular/forms';
   standalone: true,
   imports: [],
   template: `<svg class="chart7">
+    <g class="tooltipContainer">
+      <rect class="svg-tooltip_background"></rect>
+      <g class="svg-tooltip">
+        <text class="svg-tooltip_title"></text>
+        <text class="svg-tooltip_symbol"></text>
+        <text class="svg-tooltip_value">
+          <tspan class="svg-tooltip_value--key"></tspan>
+          <tspan class="svg-tooltip_value--value"></tspan>
+        </text>
+      </g>
+    </g>
     <style>
       .chart7 { font-size: 12px; }
       .chart7 text.title { font-weight: bold;}
@@ -141,7 +152,8 @@ constructor(element: ElementRef) {
       .attr('transform', 'rotate(-90)');
 
     //tooltip
-
+    this.tooltipContainer = this.svg.select('g.tooltipContainer')
+      .raise();
   }
 
   setParams(): void {
@@ -336,7 +348,7 @@ constructor(element: ElementRef) {
   }
 
   // tooltip
-
+  
   // highlight
   data1 = [
     {

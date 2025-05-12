@@ -1,7 +1,7 @@
 import { Component, ElementRef, input, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { StackHelper } from '../../helpers/stack.helper';
 import * as d3 from 'd3';
-import { IGroupStackConfig, IGroupStackData } from '../../interfaces/chart.interfaces';
+import { IGroupStackConfig, IGroupStackData, IGroupStackRectData, ITooltipData } from '../../interfaces/chart.interfaces';
 import ObjectHelper from '../../helpers/object.helper';
 import { ChartDimensions } from '../../helpers/chart.dimentions.helper';
 import { MinValidator } from '@angular/forms';
@@ -16,7 +16,7 @@ import { MinValidator } from '@angular/forms';
       <rect class="svg-tooltip_background"></rect>
       <g class="svg-tooltip">
         <text class="svg-tooltip_title"></text>
-        <text class="svg-tooltip_symbol"></text>
+        <rect class="svg-tooltip_symbol"></rect>
         <text class="svg-tooltip_value">
           <tspan class="svg-tooltip_value--key"></tspan>
           <tspan class="svg-tooltip_value--value"></tspan>
@@ -360,14 +360,36 @@ constructor(element: ElementRef) {
   }
 
   // tooltip
-  tooltip(event: MouseEvent, d: any): void {
-    console.log(arguments);
+  tooltip = (event: MouseEvent, data: IGroupStackRectData): void => {
+    console.log(event, data, this);
+    
+    const value = Math.round(10 * data.value) / 10 + ' ' + this.data.unit;
+
+    // convert element to tooltip data
+    const tooltipData: ITooltipData = {
+      title: data.group + ' ' + data.domain,
+      color: this.scales.color(data.index),
+      key: data.stack,
+      value
+    }
     // title 
+    this.tooltipContainer.select('text.svg-tooltip_title')
+      .text(tooltipData.title);
 
     // set value 
+    this.tooltipContainer.select('tspan.svg-tooltip_value--key')
+      .text(tooltipData.key);
+
+    this.tooltipContainer.select('tspan.svg-tooltip_value--value')
+      .text(tooltipData.value);
+
+    // symbol color
+    this.tooltipContainer.select('text.svg-tooltip_title')
+      .text(tooltipData.title);
 
     // set background
-
+    this.tooltipContainer.select('rect.svg-tooltip_symbol')
+      .style('fill', tooltipData.color);
     // resize
 
     // set position

@@ -306,7 +306,7 @@ constructor(element: ElementRef) {
     const groupedData = d3.groups(data, d => d.domain + '__' + d.group);
     
     const keys = this.data.stackOrder; //d3.groups(data, d => d.stack).map((d) => d[0]);
-    console.log(groupedData, keys);
+    
     const stack = d3.stack()
       .keys(keys)
       .value((element, key) => element[1].find(d => d.stack === key).value);
@@ -332,7 +332,6 @@ constructor(element: ElementRef) {
 
   drawRectangles(): void {
     const data = this.stackedData;
-    console.log(data);
     const colors = d3.schemeCategory10;
 
     this.dataContainer
@@ -348,7 +347,7 @@ constructor(element: ElementRef) {
     .attr('height', (d) => Math.abs(this.scales.y(d.min) - this.scales.y(d.max)))
     .attr('stroke', 'white')
     .style('fill', (d) => this.scales.color(d.index))
-    .on('mouseenter', this.tooltip);
+    .on('mousemove', this.tooltip);
   }
 
   updateChart() {
@@ -361,7 +360,6 @@ constructor(element: ElementRef) {
 
   // tooltip
   tooltip = (event: MouseEvent, data: IGroupStackRectData): void => {
-    console.log(event, data, this);
     
     const value = Math.round(10 * data.value) / 10 + ' ' + this.data.unit;
 
@@ -393,7 +391,10 @@ constructor(element: ElementRef) {
     // resize
 
     // set position
-
+    const position = d3.pointer(event);
+    
+    this.tooltipContainer
+      .attr('transform', `translate(${position[0]}, ${position[1]})`)
   }
   // highlight
   data1 = [

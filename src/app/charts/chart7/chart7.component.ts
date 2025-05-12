@@ -311,22 +311,23 @@ constructor(element: ElementRef) {
       .keys(keys)
       .value((element, key) => element[1].find(d => d.stack === key).value);
 
-    this.stackedData = stack(groupedData);
-
-    const aux = this.stackedData
+    this.stackedData = stack(groupedData)
       .flatMap((v) => v.map((elem) => {
         //console.log(v, elem);
-        const data = elem.data[1].find((d) => d.stack === v.key);
+        const [domain, group] = elem.data[0].split('_');
+        const data = elem.data[1].find((d) => d.stack === v.key) || {
+          domain,
+          group,
+          key: v.key
+        };
         return {
           index: v.index,
-          key: v.key,
           min: elem[0],
           max: elem[1],
           ...data
           }
         })
       );
-      console.log(aux);
     }
 
   drawRectangles(): void {

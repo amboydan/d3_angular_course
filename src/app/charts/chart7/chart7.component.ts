@@ -17,7 +17,8 @@ import { MinValidator } from '@angular/forms';
       <g class="svg-tooltip">
         <text class="svg-tooltip_title"></text>
         <rect class="svg-tooltip_symbol"></rect>
-        <text class="svg-tooltip_value">
+        <text class="svg-tooltip_value"
+          [attr.y]="config.tooltip.labels.height">
           <tspan class="svg-tooltip_value--key"></tspan>
           <tspan class="svg-tooltip_value--value"></tspan>
         </text>
@@ -27,6 +28,9 @@ import { MinValidator } from '@angular/forms';
       .chart7 { font-size: 12px; }
       .chart7 text.title { font-weight: bold;}
       .chart7 rect { fill: unset; }
+      .chart7 .svg-tooltip_value--value {
+        font-size: {{config.tooltip.labels.fontSize}}px;
+      }
     </style>
   </svg>`
 })
@@ -98,6 +102,19 @@ private _defaultConfig: IGroupStackConfig = {
         right: 20,
         bottom: 60,
         left: 50
+      },
+      tooltip: {
+        background: {
+          xPadding: 10,
+          yPadding: 10,
+          color: '#000'
+        },
+        labels: {
+          symbolSize: 6,
+          fontSize: 30,
+          height: 30,
+          textSeparator: 10
+        }
       }
 }
 
@@ -375,6 +392,9 @@ constructor(element: ElementRef) {
       .text(tooltipData.title);
 
     // set value 
+    this.tooltipContainer.select('text.svg-tooltip_value')
+      .attr('y', this.config.tooltip.labels.height);
+
     this.tooltipContainer.select('tspan.svg-tooltip_value--key')
       .text(tooltipData.key);
 
@@ -391,7 +411,7 @@ constructor(element: ElementRef) {
     // resize
 
     // set position
-    const position = d3.pointer(event);
+    const position = d3.pointer(event, this.svg.node());
     
     this.tooltipContainer
       .attr('transform', `translate(${position[0]}, ${position[1]})`)

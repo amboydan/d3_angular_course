@@ -18,18 +18,29 @@ import { MinValidator } from '@angular/forms';
         <text class="svg-tooltip_title"></text>
         <rect class="svg-tooltip_symbol"></rect>
         <text class="svg-tooltip_value"
-          [attr.y]="config.tooltip.labels.height">
+          [attr.y]="config.tooltip.labels.height + config.fontsize"
+          [attr.x]="config.tooltip.symbol.width + config.tooltip.labels.textSeparator"
+        >
           <tspan class="svg-tooltip_value--key"></tspan>
           <tspan class="svg-tooltip_value--value"></tspan>
         </text>
       </g>
     </g>
     <style>
-      .chart7 { font-size: 12px; }
+      .chart7 { font-size: {{config.fontsize}}; }
       .chart7 text.title { font-weight: bold;}
       .chart7 rect { fill: unset; }
       .chart7 .svg-tooltip_value--value {
         font-size: {{config.tooltip.labels.fontSize}}px;
+        font-weight: bold;
+      }
+      .chart7 .svg-tooltip_background {
+        fill: {{config.tooltip.background.color}};
+        fill-opacity: {{config.tooltip.background.opacity}};
+        stroke: {{config.tooltip.background.stroke}};
+        stroke-width: {{config.tooltip.background.strokeWidth}};
+        rx: {{config.tooltip.background.rx}};
+        ry: {{config.tooltip.background.ry}};
       }
     </style>
   </svg>`
@@ -97,6 +108,7 @@ private _config: IGroupStackConfig;
 private _defaultConfig: IGroupStackConfig = {
       hiddenOpacity: 0.3,
       transition: 300,
+      fontsize: 12,
       margins: {
         top: 40,
         right: 20,
@@ -107,13 +119,22 @@ private _defaultConfig: IGroupStackConfig = {
         background: {
           xPadding: 10,
           yPadding: 10,
-          color: '#000'
+          color: '#fff',
+          opacity: 0.8,
+          stroke: '#000',
+          strokeWidth: 2,
+          rx: 3,
+          ry: 3
         },
         labels: {
           symbolSize: 6,
           fontSize: 30,
           height: 30,
           textSeparator: 10
+        },
+        symbol: {
+          width: 6,
+          height: 6
         }
       }
 }
@@ -389,12 +410,10 @@ constructor(element: ElementRef) {
     }
     // title 
     this.tooltipContainer.select('text.svg-tooltip_title')
+      .attr('y', this.config.fontsize + 'px')
       .text(tooltipData.title);
 
     // set value 
-    this.tooltipContainer.select('text.svg-tooltip_value')
-      .attr('y', this.config.tooltip.labels.height);
-
     this.tooltipContainer.select('tspan.svg-tooltip_value--key')
       .text(tooltipData.key);
 
@@ -402,12 +421,22 @@ constructor(element: ElementRef) {
       .text(tooltipData.value);
 
     // symbol color
-    this.tooltipContainer.select('text.svg-tooltip_title')
-      .text(tooltipData.title);
+    this.tooltipContainer.select('rect.svg-tooltip_symbol')
+      .attr('y', this.config.tooltip.labels.height + this.config.fontsize - this.config.tooltip.symbol.height)
+      .attr('width', this.config.tooltip.symbol.width)
+      .attr('height', this.config.tooltip.symbol.height)
+      .style('fill', tooltipData.color);
 
     // set background
-    this.tooltipContainer.select('rect.svg-tooltip_symbol')
-      .style('fill', tooltipData.color);
+    const tooltipDimensions: DOMRect = this.tooltipContainer.select('g.svg-tooltip')
+      .node().getBoundingClientRect();
+
+    this.tooltipContainer.select('rect.svg-tooltip_background')
+      .attr('width', tooltipDimensions.width + 2 * this.config.tooltip.background.xPadding)
+      .attr('height', tooltipDimensions.height + 2 * this.config.tooltip.background.yPadding)
+      .attr('x', -this.config.tooltip.background.xPadding)
+      .attr('y', -this.config.tooltip.background.yPadding)
+
     // resize
 
     // set position

@@ -135,6 +135,10 @@ private _defaultConfig: IGroupStackConfig = {
         symbol: {
           width: 6,
           height: 6
+        },
+        offset: {
+          x: 20,
+          y: 20
         }
       }
 }
@@ -166,6 +170,11 @@ constructor(element: ElementRef) {
   }
 
   setElements(): void {
+
+    this.svg
+      .on('mousemove', this.moveTooltip)
+      .on('mouseleave', this.hideTooltip);
+      
     this.xAxisContainer = this.svg.append('g').attr('class', 'xAxisContainer')
       .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginBottom})`);
 
@@ -385,7 +394,7 @@ constructor(element: ElementRef) {
     .attr('height', (d) => Math.abs(this.scales.y(d.min) - this.scales.y(d.max)))
     .attr('stroke', 'white')
     .style('fill', (d) => this.scales.color(d.index))
-    .on('mousemove', this.tooltip);
+    .on('mouseenter', this.tooltip);
   }
 
   updateChart() {
@@ -399,6 +408,8 @@ constructor(element: ElementRef) {
   // tooltip
   tooltip = (event: MouseEvent, data: IGroupStackRectData): void => {
     
+    this.showTooltip();
+
     const value = Math.round(10 * data.value) / 10 + ' ' + this.data.unit;
 
     // convert element to tooltip data
@@ -440,11 +451,49 @@ constructor(element: ElementRef) {
     // resize
 
     // set position
-    const position = d3.pointer(event, this.svg.node());
-    
-    this.tooltipContainer
-      .attr('transform', `translate(${position[0]}, ${position[1]})`)
+    this.moveTooltip(event);
+
   }
+
+  moveTooltip = (event: MouseEvent) => {
+    const position = d3.pointer(event, this.svg.node());
+
+    const dims = this.tooltipContainer.node().getBoundingClientRect();
+
+    let xPosition: number;
+    let yPosition: number;
+
+    if (position[0] > this.dimensions.midWidth) {
+      xPosition = position[0] - dims.width;
+    } else {
+      xPosition = position[0] + this.config.tooltip.offset.x; 
+    }
+
+    yPosition = position[1] + this.config.tooltip.offset.y - 0.5 * dims.height
+    
+    if (yPosition + dims.height > this.dimensions.height) {
+      yPosition = this.dimensions.height - dims.height;
+    }
+
+    if (yPosition < this.config.tooltip.offset.y) {
+      yPosition = this.config.tooltip.offset.y;
+    }
+
+    this.tooltipContainer
+      .attr('transform', `translate(
+        ${xPosition}, 
+        ${yPosition}
+      )`)
+  }
+
+  showTooltip = () => {
+    this.tooltipContainer.style('visibility', null);
+  }
+
+  hideTooltip = () => {
+    this.tooltipContainer.style('visibility', 'hidden');
+  }
+
   // highlight
   data1 = [
     {

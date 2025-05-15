@@ -95,6 +95,10 @@ export interface ITooltipConfig {
     symbol: {
         width: number;
         height: number;
+    };
+    offset: {
+        x: number;
+        y: number;
     }
 
 }

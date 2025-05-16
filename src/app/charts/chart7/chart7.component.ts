@@ -42,10 +42,10 @@ import { MinValidator } from '@angular/forms';
         rx: {{config.tooltip.background.rx}};
         ry: {{config.tooltip.background.ry}};
       }
-      .chart rect.faded {
+      .chart7 rect.faded {
         opacity: 0.3;
       }
-      .chart rect.data {
+      .chart7 rect.data {
         transition: opacity {{config.transitions.slow}}s;
       }
     </style>
@@ -333,6 +333,14 @@ constructor(element: ElementRef) {
           .call(updateLegendItem)
       )
       .attr('class', 'legend-item')
+      .on('mouseenter', (event, stack) => {
+        this.highlightSeries(stack);
+        this.highlightLegendItems(stack);  
+      })
+      .on('mouseleave', () => {
+        this.resetHighlights();
+        this.resetLegendItems();
+      });
 
     // reposition elements
     // a. reposition legend items
@@ -513,8 +521,23 @@ constructor(element: ElementRef) {
       .classed('faded', (d: IGroupStackRectData) => d.key !== data.key);//applies a class to the rectangles based on a certain conditions
   }
 
+  highlightSeries = (stack: string): void => {
+    this.dataContainer.selectAll('rect.data')
+      .classed('faded', (d: IGroupStackRectData) => d.stack !== stack);
+  }
+
+  highlightLegendItems = (stack: string): void => {
+    this.legendContainer.selectAll('rect.legend-icon')
+      .classed('faded', (d: string) => d !== stack);
+  }
+
   resetHighlights = () => {
     this.dataContainer.selectAll('rect.data')
+      .classed('faded', false);
+  }
+
+  resetLegendItems = () => {
+    this.legendContainer.selectAll('rect.legend-icon')
       .classed('faded', false);
   }
 

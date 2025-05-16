@@ -42,11 +42,11 @@ import { MinValidator } from '@angular/forms';
         rx: {{config.tooltip.background.rx}};
         ry: {{config.tooltip.background.ry}};
       }
-      .chart7 rect.faded {
+      .chart7 rect.faded, .chart7 g.legend-item.faded {
         opacity: 0.3;
       }
       .chart7 rect.data {
-        transition: opacity {{config.transitions.slow}}s;
+        transition: opacity {{config.transitions.slow}};
       }
     </style>
   </svg>`
@@ -147,8 +147,8 @@ private _defaultConfig: IGroupStackConfig = {
         }
       },
       transitions: {
-        normal: 0.3,
-        slow: 0.6
+        normal: 300,
+        slow: 600
       }
 }
 
@@ -197,13 +197,14 @@ constructor(element: ElementRef) {
       .on('mouseleave', this.hideTooltip);
 
     this.xAxisContainer = this.svg.append('g').attr('class', 'xAxisContainer')
-      .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginBottom})`);
+      .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginBottom + 2})`);
 
     this.yAxisContainer = this.svg.append('g').attr('class', 'yAxisContainer')
-      .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginTop})`);
+      .attr('transform', `translate(${this.dimensions.marginLeft - 3}, ${this.dimensions.marginTop})`);
 
     this.dataContainer = this.svg.append('g').attr('class', 'dataContainer')
-      .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginTop})`);
+      .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginTop})`)
+      .on('mouseleave', this.hideTooltip);
 
     this.legendContainer = this.svg.append('g').attr('class', 'legendContainer')
       .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginBottom + 30})`);
@@ -241,7 +242,7 @@ constructor(element: ElementRef) {
     const domain = Array.from(new Set(data.map((d) => d.domain ))).sort(d3.ascending);
     const range = [0, this.dimensions.innerWidth];
 
-    this.scales.x = d3.scaleBand().domain(domain).range(range);
+    this.scales.x = d3.scaleBand().domain(domain).range(range).paddingInner(0.2);
   }
 
   setYScale(): void {
@@ -262,7 +263,7 @@ constructor(element: ElementRef) {
     const domain = Array.from(new Set(data.map((d) => d.group))).sort(d3.ascending);
     const range = [0, this.scales.x.bandwidth()];
     
-    this.scales.group = d3.scaleBand().domain(domain).range(range);
+    this.scales.group = d3.scaleBand().domain(domain).range(range).paddingInner(0.1);
   }
 
   setColorScale(): void {
@@ -295,7 +296,10 @@ constructor(element: ElementRef) {
       .tickSizeOuter(0)
       .tickSizeInner(-this.dimensions.innerWidth);
     
-    this.yAxisContainer.call(this.yAxis);
+    this.yAxisContainer
+      .transition()
+      .duration(this.config.transitions.slow)
+      .call(this.yAxis);
 
     this.yAxisContainer.selectAll('.tick line')
       .style('opacity', 0.3)
@@ -393,11 +397,13 @@ constructor(element: ElementRef) {
     this.stackedData = stack(groupedData)
       .flatMap((v) => v.map((elem) => {
         //console.log(v, elem);
-        const [domain, group] = elem.data[0].split('_');
+        const [domain, group] = elem.data[0].split('__');
         const data = elem.data[1].find((d) => d.stack === v.key) || {
           domain,
           group,
-          key: v.key
+          stack: v.key,
+          key: domain + "__" + group + "__" + v.key,
+          value: 0
         };
         return {
           index: v.index,
@@ -416,20 +422,26 @@ constructor(element: ElementRef) {
     this.dataContainer
     .selectAll('rect.data')
     .data(data, d => d.key)
-    .join('rect')
+    .join(
+      enter => enter.append('rect')
+        .attr('y', this.scales.y(0))
+        .attr('height', 0)
+    )
     .attr('class', 'data')
     .attr('x', d => {
       return this.scales.x(d.domain) + this.scales.group(d.group);
     })
     .attr('width', this.scales.group.bandwidth())
-    .attr('y', (d) => this.scales.y(d.max))
-    .attr('height', (d) => Math.abs(this.scales.y(d.min) - this.scales.y(d.max)))
     .attr('stroke', 'white')
     .style('fill', (d) => this.scales.color(d.index))
     .on('mouseenter', (event, data) => {
       this.tooltip(event, data);
       this.highlightRectangle(data);
-    });
+    })
+    .transition()
+    .duration(this.config.transitions.slow)
+    .attr('y', (d) => this.scales.y(d.max))
+    .attr('height', (d) => Math.abs(this.scales.y(d.min) - this.scales.y(d.max)));
   }
 
   updateChart() {
@@ -537,12 +549,16 @@ constructor(element: ElementRef) {
   }
 
   highlightSeries = (stack: string): void => {
+    if (this.hiddenIds.has(stack)) { return; }
+
     this.dataContainer.selectAll('rect.data')
       .classed('faded', (d: IGroupStackRectData) => d.stack !== stack);
   }
 
   highlightLegendItems = (stack: string): void => {
-    this.legendContainer.selectAll('rect.legend-icon')
+    if (this.hiddenIds.has(stack)) { return; }
+
+    this.legendContainer.selectAll('g.legend-item')
       .classed('faded', (d: string) => this.hiddenIds.has(d) || d !== stack);
   }
 
@@ -554,7 +570,7 @@ constructor(element: ElementRef) {
 
   resetLegendItems = () => {
     this.legendContainer
-      .selectAll('rect.legend-icon')
+      .selectAll('g.legend-item')
       .classed('faded', (d) => this.hiddenIds.has(d) );
   }
 

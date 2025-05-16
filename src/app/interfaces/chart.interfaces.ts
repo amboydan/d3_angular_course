@@ -55,10 +55,13 @@ export interface IGroupStackData {
 
 export interface IGroupStackConfig {
     hiddenOpacity: number;
-    transition: number;
     fontsize: number;
     margins: IChartMargins;
     tooltip: ITooltipConfig;
+    transitions: {
+        normal: number;
+        slow: number;
+    }
 }
 
 export interface IGroupStackRectData extends IGroupStackDataElem {
@@ -99,6 +102,5 @@ export interface ITooltipConfig {
     offset: {
         x: number;
         y: number;
-    }
-
+    };
 }

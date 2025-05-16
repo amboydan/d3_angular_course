@@ -42,6 +42,12 @@ import { MinValidator } from '@angular/forms';
         rx: {{config.tooltip.background.rx}};
         ry: {{config.tooltip.background.ry}};
       }
+      .chart rect.faded {
+        opacity: 0.3;
+      }
+      .chart rect.data {
+        transition: opacity {{config.transitions.slow}}s;
+      }
     </style>
   </svg>`
 })
@@ -50,7 +56,7 @@ export class Chart7Component implements OnInit, OnChanges{
 
   host: any;
   svg: any;
-
+  
   dimensions: ChartDimensions;
 
   // axis
@@ -107,7 +113,6 @@ private _config: IGroupStackConfig;
   
 private _defaultConfig: IGroupStackConfig = {
       hiddenOpacity: 0.3,
-      transition: 300,
       fontsize: 12,
       margins: {
         top: 40,
@@ -140,6 +145,10 @@ private _defaultConfig: IGroupStackConfig = {
           x: 20,
           y: 20
         }
+      },
+      transitions: {
+        normal: 0.3,
+        slow: 0.6
       }
 }
 
@@ -174,7 +183,7 @@ constructor(element: ElementRef) {
     this.svg
       .on('mousemove', this.moveTooltip)
       .on('mouseleave', this.hideTooltip);
-      
+
     this.xAxisContainer = this.svg.append('g').attr('class', 'xAxisContainer')
       .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginBottom})`);
 
@@ -394,7 +403,10 @@ constructor(element: ElementRef) {
     .attr('height', (d) => Math.abs(this.scales.y(d.min) - this.scales.y(d.max)))
     .attr('stroke', 'white')
     .style('fill', (d) => this.scales.color(d.index))
-    .on('mouseenter', this.tooltip);
+    .on('mouseenter', (event, data) => {
+      this.tooltip(event, data);
+      this.highlightRectangle(data);
+    });
   }
 
   updateChart() {
@@ -492,9 +504,20 @@ constructor(element: ElementRef) {
 
   hideTooltip = () => {
     this.tooltipContainer.style('visibility', 'hidden');
+    this.resetHighlights();
   }
 
   // highlight
+  highlightRectangle = (data: IGroupStackRectData): void => {
+    this.dataContainer.selectAll('rect.data')
+      .classed('faded', (d: IGroupStackRectData) => d.key !== data.key);//applies a class to the rectangles based on a certain conditions
+  }
+
+  resetHighlights = () => {
+    this.dataContainer.selectAll('rect.data')
+      .classed('faded', false);
+  }
+
   data1 = [
     {
         year: 2002,

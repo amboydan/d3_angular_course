@@ -1,7 +1,7 @@
 import { Component, ElementRef, input, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { StackHelper } from '../../helpers/stack.helper';
 import * as d3 from 'd3';
-import { IGroupStackConfig, IGroupStackData, IGroupStackRectData, ITooltipData } from '../../interfaces/chart.interfaces';
+import { IGroupStackConfig, IGroupStackData, IGroupStackDataElem, IGroupStackRectData, ITooltipData } from '../../interfaces/chart.interfaces';
 import ObjectHelper from '../../helpers/object.helper';
 import { ChartDimensions } from '../../helpers/chart.dimentions.helper';
 import { MinValidator } from '@angular/forms';
@@ -154,6 +154,18 @@ private _defaultConfig: IGroupStackConfig = {
 
 stackedData: any;
 
+hiddenIds: Set<string> = new Set();
+
+private _filteredData: IGroupStackDataElem[];
+
+get filteredData() {
+  return this._filteredData || this.data.data;
+}
+
+set filteredData(values: IGroupStackDataElem[]) {
+  this._filteredData = values;
+}
+
 constructor(element: ElementRef) {
   this.host = d3.select(element.nativeElement);
   console.log(this);
@@ -233,7 +245,7 @@ constructor(element: ElementRef) {
   }
 
   setYScale(): void {
-    const data = this.data.data;
+    const data = this.filteredData;
 
     const minVal = Math.min(0, d3.min(data, d => d.value));
     const maxVal = d3.max(d3.flatRollup(data, v => d3.sum(v, d => d.value), d => d.domain, d => d.group), d => d[2]);
@@ -245,7 +257,7 @@ constructor(element: ElementRef) {
   }
 
   setGroupScale(): void {
-    const data = this.data.data;
+    const data = this.filteredData;
 
     const domain = Array.from(new Set(data.map((d) => d.group))).sort(d3.ascending);
     const range = [0, this.scales.x.bandwidth()];
@@ -255,8 +267,8 @@ constructor(element: ElementRef) {
 
   setColorScale(): void {
     const data = this.data.data;
-    const stacks = Array.from(new Set(data.map((d) => d.stack)));
-    const domain = [stacks.length, 0]; // stacks index
+    const stacks = Array.from(new Set(this.data.data.map((d) => d.stack)));
+    const domain = [stacks.length - 1, 0]; // stacks index
 
     this.scales.color = d3.scaleSequential(d3.interpolateSpectral).domain(domain);
   }
@@ -296,15 +308,15 @@ constructor(element: ElementRef) {
     const width = 35;
     const height = 12;
     const fontSize = 10;
+    const color = (elem: any) => this.scales.color(data.indexOf(elem));
 
-    const color = (elem) => this.scales.color(data.indexOf(elem));
-
-    const generateLegendItem = (selection) => {
-      selection.append('rect')
-      .attr('class', 'legend-icon')
-      .attr('width', width)
-      .attr('height', height)
-      .style('fill', (d) => color(d));
+    const generateLegendItem = (selection: any) => {
+      selection
+        .append('rect')
+        .attr('class', 'legend-icon')
+        .attr('width', width)
+        .attr('height', height)
+        .style('fill', (d: any) => color(d));
 
       selection.append('text')
         .attr('class', 'legend-label')
@@ -312,47 +324,50 @@ constructor(element: ElementRef) {
         .attr('y', height + fontSize + 5)
         .style('font-size', fontSize + 'px')
         .style('text-anchor', 'middle')
-        .text((d) => d);
+        .text((d: any) => d);
     }
 
-    const updateLegendItem = (selection) => {
+    const updateLegendItem = (selection: any) => {
       selection.selectAll('rect.legend-icon')
-      .style('fill', (d) => d.color);
+        .style('fill', (d: any) => color(d));
 
-      selection.append('text')
-        .text((d) => d);
+      selection.select('text.legend-label')
+        .text((d: any) => d);
     }
-
+    
     // set item containers
-    this.legendContainer.selectAll('g.legend-item')
+    this.legendContainer
+      .selectAll('g.legend-item')
       .data(data, d => d)
       .join(
-        enter => enter.append('g')
+        (enter: any) => enter.append('g')
           .call(generateLegendItem),
-        update => update
+        (update: any) => update
           .call(updateLegendItem)
       )
       .attr('class', 'legend-item')
-      .on('mouseenter', (event, stack) => {
-        this.highlightSeries(stack);
-        this.highlightLegendItems(stack);  
+      .on('mouseenter', (event: any, key: any) => {
+        this.highlightSeries(key);
+        this.highlightLegendItems(key);  
       })
       .on('mouseleave', () => {
         this.resetHighlights();
         this.resetLegendItems();
-      });
+      })
+      .on('click', (event, stack) => this.toggleHighlight(stack));
 
     // reposition elements
     // a. reposition legend items
     let padding = 0;
 
-    this.legendContainer.selectAll('g.legend-item')
-      .each(function() {
-        const g = d3.select(this);
+    this.legendContainer
+      .selectAll('g.legend-item')
+      .each((data: any, index: number, groups: any) => {
+        const g = d3.select(groups[index]);
         g.attr('transform', `translate(${padding}, 0)`);
-
         padding += g.node().getBBox().width; // if using strict mode need to use BBox
       })
+
     // b. reposition the legend (want in middle of chart)
     const legendWidth = this.legendContainer.node().getBBox().width;
 
@@ -366,14 +381,14 @@ constructor(element: ElementRef) {
   }
 
   setStackedData(): void {
-    const data = this.data.data;
+    const data = this.filteredData;
     const groupedData = d3.groups(data, d => d.domain + '__' + d.group);
     
     const keys = this.data.stackOrder; //d3.groups(data, d => d.stack).map((d) => d[0]);
     
     const stack = d3.stack()
       .keys(keys)
-      .value((element, key) => element[1].find(d => d.stack === key).value);
+      .value((element, key) => element[1].find(d => d.stack === key)?.value || 0);
 
     this.stackedData = stack(groupedData)
       .flatMap((v) => v.map((elem) => {
@@ -528,17 +543,34 @@ constructor(element: ElementRef) {
 
   highlightLegendItems = (stack: string): void => {
     this.legendContainer.selectAll('rect.legend-icon')
-      .classed('faded', (d: string) => d !== stack);
+      .classed('faded', (d: string) => this.hiddenIds.has(d) || d !== stack);
   }
 
   resetHighlights = () => {
-    this.dataContainer.selectAll('rect.data')
+    this.dataContainer
+      .selectAll('rect.data')
       .classed('faded', false);
   }
 
   resetLegendItems = () => {
-    this.legendContainer.selectAll('rect.legend-icon')
-      .classed('faded', false);
+    this.legendContainer
+      .selectAll('rect.legend-icon')
+      .classed('faded', (d) => this.hiddenIds.has(d) );
+  }
+
+  toggleHighlight = (stack: string): void => {
+    // toggle hiddenId
+    if (this.hiddenIds.has(stack)) {
+      this.hiddenIds.delete(stack);
+    } else {
+      this.hiddenIds.add(stack);
+    }
+
+    //update filtered data
+    this.filteredData = this.data.data.filter((elem: IGroupStackDataElem) => !this.hiddenIds.has(elem.stack));
+
+    // redraw the chart
+    this.updateChart();
   }
 
   data1 = [

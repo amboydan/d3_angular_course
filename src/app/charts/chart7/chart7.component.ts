@@ -279,7 +279,7 @@ constructor(element: ElementRef) {
     const data = this.data.data;
     const stacks = new Set(data.map((d) => d.stack));
     const n = this.stacked ? this.stackIds.size : this.groupIds.size;
-    const domain = [n - 1, 0]; // stacks index
+    const domain = [n + 1, 0]; // stacks index
 
     this.scales.color = d3.scaleSequential(d3.interpolateSpectral).domain(domain);
   }
@@ -317,6 +317,11 @@ constructor(element: ElementRef) {
   }
 
   setLegend(): void {
+    if (!this.stacked && !this.grouped) {
+      this.legendContainer.html('');
+      return;
+    }
+
     const data = this.data.stackOrder;
 
     const width = 35;
@@ -471,11 +476,12 @@ constructor(element: ElementRef) {
 
     // convert element to tooltip data
     const tooltipData: ITooltipData = {
-      title: data.group + ' ' + data.domain,
+      title: (this.grouped && this.stacked) ? data.group + ' ' + data.domain : data.domain,
       color: this.scales.color(data.index),
       key: data.stack,
       value
     }
+
     // title 
     this.tooltipContainer.select('text.svg-tooltip_title')
       .attr('y', this.config.fontsize + 'px')
@@ -559,10 +565,11 @@ constructor(element: ElementRef) {
   }
 
   highlightSeries = (stack: string): void => {
+    const attr = this.stacked ? 'stack' : 'group';
     if (this.hiddenIds.has(stack)) { return; }
 
     this.dataContainer.selectAll('rect.data')
-      .classed('faded', (d: IGroupStackRectData) => d.stack !== stack);
+      .classed('faded', (d: IGroupStackRectData) => d[attr] !== stack);
   }
 
   highlightLegendItems = (stack: string): void => {

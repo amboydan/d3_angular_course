@@ -89,6 +89,8 @@ export class Chart7Component implements OnInit, OnChanges{
 
 @Input() set data(values) {
   this._data = ObjectHelper.UpdateObjectWithPartialValues(this._defaultData, values);
+
+  this.setStackedAndGrouped();
 };
 
 get data() {
@@ -153,6 +155,13 @@ private _defaultConfig: IGroupStackConfig = {
 }
 
 stackedData: any;
+
+stacked: boolean;
+
+grouped: boolean;
+
+stackIds: Set<string>;
+groupIds: Set<string>;
 
 hiddenIds: Set<string> = new Set();
 
@@ -268,8 +277,9 @@ constructor(element: ElementRef) {
 
   setColorScale(): void {
     const data = this.data.data;
-    const stacks = Array.from(new Set(this.data.data.map((d) => d.stack)));
-    const domain = [stacks.length - 1, 0]; // stacks index
+    const stacks = new Set(data.map((d) => d.stack));
+    const n = this.stacked ? this.stackIds.size : this.groupIds.size;
+    const domain = [n - 1, 0]; // stacks index
 
     this.scales.color = d3.scaleSequential(d3.interpolateSpectral).domain(domain);
   }
@@ -388,7 +398,7 @@ constructor(element: ElementRef) {
     const data = this.filteredData;
     const groupedData = d3.groups(data, d => d.domain + '__' + d.group);
     
-    const keys = this.data.stackOrder; //d3.groups(data, d => d.stack).map((d) => d[0]);
+    const keys = this.stacked ? this.data.stackOrder : [null]; //d3.groups(data, d => d.stack).map((d) => d[0]);
     
     const stack = d3.stack()
       .keys(keys)
@@ -406,7 +416,7 @@ constructor(element: ElementRef) {
           value: 0
         };
         return {
-          index: v.index,
+          index: this.stacked ? v.index : this.data.stackOrder.indexOf(group),
           min: elem[0],
           max: elem[1],
           ...data
@@ -587,6 +597,14 @@ constructor(element: ElementRef) {
 
     // redraw the chart
     this.updateChart();
+  }
+
+  setStackedAndGrouped = (): void => {
+    this.stackIds = new Set(this.data.data.map((d) => d.stack));
+    this.groupIds = new Set(this.data.data.map((d) => d.group));
+
+    this.stacked = this.stackIds.size > 1;
+    this.grouped = this.groupIds.size > 1;
   }
 
   data1 = [

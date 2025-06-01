@@ -20,6 +20,7 @@ import { PieHelper } from './helpers/pie.helper';
 import { StackHelper } from './helpers/stack.helper';
 //
 import * as d3 from 'd3';
+import { Chart8Component } from './charts/chart8/chart8.component';
 
 
 
@@ -28,7 +29,8 @@ import * as d3 from 'd3';
   standalone: true,
   imports: [Chart1Component, Chart2Component, 
     CommonModule, Chart3Component, Chart4Component,
-    Chart5Component, Chart6Component, Chart7Component],
+    Chart5Component, Chart6Component, Chart7Component,
+    Chart8Component],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

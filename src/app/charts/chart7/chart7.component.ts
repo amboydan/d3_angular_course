@@ -177,7 +177,6 @@ set filteredData(values: IGroupStackDataElem[]) {
 
 constructor(element: ElementRef) {
   this.host = d3.select(element.nativeElement);
-  console.log(this);
 }
 
   ngOnInit(): void {

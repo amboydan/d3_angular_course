@@ -75,7 +75,17 @@ export class ApiService {
 
     // get the population data from the assets folder
     getPopulationData(): Observable<any> {
-      const url = 'assets/population2.csv'
+      const url = 'assets/population2.csv';
       return this.getParsedData(url);
+    }
+
+    getCountriesGeoData(): Observable<any> {
+      const url = 'assets/CNTR_RG_60M_2020_4326.json';
+      return this.getJson(url);
+    }
+
+    getCovidByCountry(): Observable<any> {
+      const url = 'assets/megafile--deaths.json';
+      return this.getJson(url);
     }
 }

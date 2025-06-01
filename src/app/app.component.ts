@@ -97,6 +97,10 @@ export class AppComponent implements OnInit{
     }
   ];
 
+  // map observables
+  geoCountries$: Observable<any>;
+  covidByCountry$: Observable<any>;
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
@@ -130,6 +134,9 @@ export class AppComponent implements OnInit{
         this.data1 = [...this.data1, 95]; }
       ,5000
     )
+
+    this.geoCountries$ = this.api.getCountriesGeoData();
+    this.covidByCountry$ = this.api.getCovidByCountry();
   }
 
    setPieData(event) {

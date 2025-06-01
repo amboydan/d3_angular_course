@@ -34,6 +34,7 @@ export class Chart8Component {
 
     constructor(element: ElementRef) {
       this.host = d3.select(element.nativeElement);
+      console.log(this);
     }
 
     @Output() tooltip = new EventEmitter<any>();

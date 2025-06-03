@@ -1,3 +1,9 @@
+/*
+In Angular, interfaces are used to define contracts for the structure of objects. They specify the properties and their types that an object should have, without providing any implementation. Interfaces are crucial for type safety, code readability, and maintainability in Angular applications.
+
+Data Structure Definition:
+Interfaces are commonly used to define the shape of data, especially when dealing with objects retrieved from APIs. This ensures that the data conforms to the expected structure, reducing runtime errors.
+*/
 
 export interface IChartMargins {
     top: number;
@@ -103,4 +109,19 @@ export interface ITooltipConfig {
         x: number;
         y: number;
     };
+}
+
+export interface IMapDataElement {
+    id: string;
+    value: number;
+    date: number;
+}
+
+export interface IMapData {
+    title: string;
+    data: IMapDataElement[];
+}
+
+export interface IMapConfig {
+    margins: IChartMargins;
 }

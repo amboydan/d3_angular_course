@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 //import { RouterOutlet } from '@angular/router';
 import { Chart1Component } from "./charts/chart1/chart1.component";
@@ -11,7 +11,7 @@ import { Chart7Component } from './charts/chart7/chart7.component';
 //
 import { ApiService } from './services/api.service';
 //
-import { Observable } from 'rxjs';
+import { combineLatest, Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 //
 import { IPieData, IPieConfig, IGroupStackData, IGroupStackDataElem, IGroupStackConfig } from './interfaces/chart.interfaces';
@@ -21,6 +21,7 @@ import { StackHelper } from './helpers/stack.helper';
 //
 import * as d3 from 'd3';
 import { Chart8Component } from './charts/chart8/chart8.component';
+import { MapHelper } from './helpers/map.helper';
 
 
 
@@ -34,8 +35,11 @@ import { Chart8Component } from './charts/chart8/chart8.component';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements OnInit{
+
+export class AppComponent implements OnInit, OnDestroy{
   title = 'dashboardOne';
+
+  subscriptions: Subscription[] = [];
 
   data1 = [50, 200, 10, 80, 160, 19, 180];
   //dollar sign denotes dealing with an Observable
@@ -100,12 +104,17 @@ export class AppComponent implements OnInit{
   // map observables
   geoCountries$: Observable<any>;
   covidByCountry$: Observable<any>;
+  countrycodes$: Observable<any>;
+
+  covidMap = new MapHelper();
 
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     //called after the constructor, initializing input properties, and the first call to ng...
     //Add 'Implements OnInit' to the class.
+
+    let subs: Subscription;
     
     this.data2$ = this.api.getEmployees();
     this.iris$ = this.api.getIris();
@@ -118,16 +127,19 @@ export class AppComponent implements OnInit{
 
     // });
 
-    this.browsers$.subscribe((data) => {
+    subs = this.browsers$.subscribe((data) => {
       this.browser = data;
       this.setPieData('now'); 
     })
 
+    this.subscriptions.push(subs);
     
-    this.population$.subscribe((data) => {
+    subs = this.population$.subscribe((data) => {
       this.population = data;
       this.setStackedData('year/gender/age_group/');
     })
+    
+    this.subscriptions.push(subs);
 
     setTimeout(
       () => {
@@ -137,6 +149,22 @@ export class AppComponent implements OnInit{
 
     this.geoCountries$ = this.api.getCountriesGeoData();
     this.covidByCountry$ = this.api.getCovidByCountry();
+    this.countrycodes$ = this.api.getCountryCodes();
+
+    // combineLatest is from Rxjs for combining two observables once they are loaded
+    subs = combineLatest([this.covidByCountry$, this.countrycodes$])
+      .subscribe(([data, codes]) => {
+        // set the map data
+        this.covidMap.setData(data, codes);
+      })
+      
+    this.subscriptions.push(subs);
+  }
+
+  ngOnDestroy(): void {
+    // remember that we should do this by all of our subscriptions that 
+    // are not managed by angular
+    this.subscriptions.map((sub) => sub.unsubscribe()); 
   }
 
    setPieData(event) {

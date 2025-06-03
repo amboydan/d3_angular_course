@@ -88,4 +88,9 @@ export class ApiService {
       const url = 'assets/megafile--deaths.json';
       return this.getJson(url);
     }
+
+    getCountryCodes(): Observable<any> {
+      const url = 'assets/mapcountries.json';
+      return this.getJson(url);
+    }
 }

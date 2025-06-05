@@ -4,6 +4,7 @@ import * as d3 from 'd3';
 import { DimensionsService } from '../../services/dimensions.service';
 import { IMapConfig, IMapData } from '../../interfaces/chart.interfaces';
 import { ObjectHelper } from '../../helpers/object.helper';
+import * as topojson from 'topojson';
 
 @Component({
   selector: 'app-chart8',
@@ -23,6 +24,7 @@ export class Chart8Component implements OnInit {
 
     projection: any;
     path: any;
+    features: any;
 
     private _geodata: any;
 
@@ -41,6 +43,7 @@ export class Chart8Component implements OnInit {
 
     @Input() set geodata(values) {
       this._geodata = values;
+      this.setFeatures();
     }
 
     @Input() set data(values) {
@@ -123,6 +126,10 @@ export class Chart8Component implements OnInit {
     }
 
     setFeatures() {
-
+      this.features = topojson.feature(this.geodata, this.geodata.objects['CNTR_RG_60M_2020_4326']);
+        console.log(this.features);
+      this.containers.countries.append('path')
+        .datum(this.features)
+        .attr('d', this.path);
     }
 }

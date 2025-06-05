@@ -18,6 +18,9 @@ export class Chart8Component implements OnInit {
     host: any;
     svg: any;
 
+    containers: any = [];
+    title: any;
+
     private _geodata: any;
 
     private _data: IMapData;
@@ -67,6 +70,8 @@ export class Chart8Component implements OnInit {
     ngOnInit(): void{
       this.setSvg();
       this.setDimensions();
+      this.setElements();
+      this.positionElements();
     }
 
     setSvg() {
@@ -78,6 +83,24 @@ export class Chart8Component implements OnInit {
       const dimensions = this.svg.node().getBoundingClientRect();
       this.dimensions.setDimensions(dimensions);
       this.dimensions.setMargins(this.config.margins);
+    }
 
+    setElements() {
+      this.containers.country = this.svg.append('g').attr('class', 'countries');
+      this.containers.data = this.svg.append('g').attr('class', 'data');
+      this.containers.titleContainer = this.svg.append('g').attr('class', 'title');
+      this.title = this.containers.titleContainer.append('g').attr('class', 'title');
+      this.containers.legend = this.svg.append('g').attr('class', 'legend');
+    }
+
+    positionElements() {
+      this.containers.country
+        .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginTop})`);
+      this.containers.data
+        .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginTop})`);
+      this.containers.titleContainer
+        .attr('transform', `translate(${this.dimensions.midWidth}, ${this.dimensions.midMarginTop})`);
+      this.containers.legend
+        .attr('transform', `translate(${this.dimensions.midWidth}, ${this.dimensions.midMarginBottom})`);
     }
 }

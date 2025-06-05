@@ -130,10 +130,14 @@ export class Chart8Component implements OnInit {
     }
 
     setProjection() {
-      this.projection = d3.geoEquirectangular()
-      .scale(65)
-      .translate([this.dimensions.midWidth, this.dimensions.midHeight])
-      //.center(0, 0);
+      this.projection = d3.geoEquirectangular();
+      // browser: store global: temp1.projection.<method>()
+      // below is for testing 'what if?'
+      //this.projection = d3.geoOrthographic()
+      // .scale(100)
+      // .translate([this.dimensions.midWidth, this.dimensions.midHeight])
+      // .center([-10, 30])
+      // .rotate([0, 0, 0]);
     }
 
     setPath() {
@@ -171,4 +175,22 @@ export class Chart8Component implements OnInit {
     //   this.setPath();
     //   this.draw();
     // }
+
+    setExtent(width, height) {
+      this.projection.fitSize([width, height], this.features);
+      //this.setPath();
+      //this.draw();
+    }
+
+    setWidth(width) {
+      this.projection.fitWidth(width, this.features);
+      this.setPath();
+      this.draw();
+    }
+
+    setHeighth(height) {
+      this.projection.fitHeight(height, this.features);
+      this.setPath();
+      this.draw();
+    }
 }

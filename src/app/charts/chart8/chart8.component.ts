@@ -43,7 +43,8 @@ export class Chart8Component implements OnInit {
 
     @Input() set geodata(values) {
       this._geodata = values;
-      this.setFeatures();
+      if (!this.svg) { return; }; // if you don't have the svg then there is no chart to update
+      this.updateChart();
     }
 
     @Input() set data(values) {
@@ -77,8 +78,8 @@ export class Chart8Component implements OnInit {
       this.setSvg();
       this.setDimensions();
       this.setElements();
-      this.positionElements();
-      this.setParams();
+      if (!this.geodata) { return; }
+      this.updateChart();
     }
 
     setSvg() {
@@ -98,6 +99,14 @@ export class Chart8Component implements OnInit {
       this.containers.titleContainer = this.svg.append('g').attr('class', 'title');
       this.title = this.containers.titleContainer.append('text').attr('class', 'title');
       this.containers.legend = this.svg.append('g').attr('class', 'legend');
+    }
+
+    updateChart() {
+      this.positionElements();
+      this.setParams(); // runs the projections --> set path and set features
+      this.setLabels();
+      this.setLegend();
+      this.draw();
     }
 
     positionElements() {
@@ -127,7 +136,11 @@ export class Chart8Component implements OnInit {
 
     setFeatures() {
       this.features = topojson.feature(this.geodata, this.geodata.objects['CNTR_RG_60M_2020_4326']);
-        console.log(this.features);
+    }
+
+    setLabels() {}
+    setLegend() {}
+    draw() {
       this.containers.countries.append('path')
         .datum(this.features)
         .attr('d', this.path);

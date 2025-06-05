@@ -95,6 +95,9 @@ export class Chart8Component implements OnInit {
 
     setElements() {
       this.containers.countries = this.svg.append('g').attr('class', 'countries');
+      // below line is for testing purposes. 'append' where draw only selects.  did this because
+      // we were adding map on top of map
+      //this.containers.countries.append('path').attr('class', 'countries');
       this.containers.data = this.svg.append('g').attr('class', 'data');
       this.containers.titleContainer = this.svg.append('g').attr('class', 'title');
       this.title = this.containers.titleContainer.append('text').attr('class', 'title');
@@ -127,7 +130,10 @@ export class Chart8Component implements OnInit {
     }
 
     setProjection() {
-      this.projection = d3.geoEquirectangular();
+      this.projection = d3.geoEquirectangular()
+      .scale(65)
+      .translate([this.dimensions.midWidth, this.dimensions.midHeight])
+      //.center(0, 0);
     }
 
     setPath() {
@@ -142,7 +148,27 @@ export class Chart8Component implements OnInit {
     setLegend() {}
     draw() {
       this.containers.countries.append('path')
+      // for testing map
+      //this.containers.countries.select('path')
         .datum(this.features)
         .attr('d', this.path);
     }
+
+    // creating auxil methods for purposes of testing
+    // setScale(scale: number) {
+    //   this.projection.scale(scale);
+    //   this.setPath();
+    //   this.draw();
+    // }
+    // // again test
+    // setTranslate(x: number, y: number) {
+    //   this.projection.translate([x, y]);
+    //   this.setPath();
+    //   this.draw();
+    // }
+    // setCenter(x: number, y: number) {
+    //   this.projection.center([x, y]);
+    //   this.setPath();
+    //   this.draw();
+    // }
 }

@@ -21,6 +21,9 @@ export class Chart8Component implements OnInit {
     containers: any = [];
     title: any;
 
+    projection: any;
+    path: any;
+
     private _geodata: any;
 
     private _data: IMapData;
@@ -72,6 +75,7 @@ export class Chart8Component implements OnInit {
       this.setDimensions();
       this.setElements();
       this.positionElements();
+      this.setParams();
     }
 
     setSvg() {
@@ -86,15 +90,15 @@ export class Chart8Component implements OnInit {
     }
 
     setElements() {
-      this.containers.country = this.svg.append('g').attr('class', 'countries');
+      this.containers.countries = this.svg.append('g').attr('class', 'countries');
       this.containers.data = this.svg.append('g').attr('class', 'data');
       this.containers.titleContainer = this.svg.append('g').attr('class', 'title');
-      this.title = this.containers.titleContainer.append('g').attr('class', 'title');
+      this.title = this.containers.titleContainer.append('text').attr('class', 'title');
       this.containers.legend = this.svg.append('g').attr('class', 'legend');
     }
 
     positionElements() {
-      this.containers.country
+      this.containers.countries
         .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginTop})`);
       this.containers.data
         .attr('transform', `translate(${this.dimensions.marginLeft}, ${this.dimensions.marginTop})`);
@@ -102,5 +106,23 @@ export class Chart8Component implements OnInit {
         .attr('transform', `translate(${this.dimensions.midWidth}, ${this.dimensions.midMarginTop})`);
       this.containers.legend
         .attr('transform', `translate(${this.dimensions.midWidth}, ${this.dimensions.midMarginBottom})`);
+    }
+
+    setParams() {
+      this.setProjection();
+      this.setPath();
+      this.setFeatures();
+    }
+
+    setProjection() {
+      this.projection = d3.geoEquirectangular();
+    }
+
+    setPath() {
+      this.path = d3.geoPath(this.projection);
+    }
+
+    setFeatures() {
+
     }
 }

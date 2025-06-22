@@ -130,13 +130,13 @@ export class Chart8Component implements OnInit {
     }
 
     setProjection() {
-      this.projection = d3.geoEquirectangular();
+      this.projection = d3.geoEquirectangular()
       // browser: store global: temp1.projection.<method>()
       // below is for testing 'what if?'
       //this.projection = d3.geoOrthographic()
-      // .scale(100)
-      // .translate([this.dimensions.midWidth, this.dimensions.midHeight])
-      // .center([-10, 30])
+       .scale(65)
+       .translate([this.dimensions.midWidth, this.dimensions.midHeight])
+       .center([-10, 30])
       // .rotate([0, 0, 0]);
     }
 

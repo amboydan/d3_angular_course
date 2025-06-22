@@ -5,6 +5,7 @@ import { DimensionsService } from '../../services/dimensions.service';
 import { IMapConfig, IMapData } from '../../interfaces/chart.interfaces';
 import { ObjectHelper } from '../../helpers/object.helper';
 import * as topojson from 'topojson';
+import { joinAllInternals } from 'rxjs/internal/operators/joinAllInternals';
 
 @Component({
   selector: 'app-chart8',
@@ -151,10 +152,13 @@ export class Chart8Component implements OnInit {
     setLabels() {}
     setLegend() {}
     draw() {
-      this.containers.countries.append('path')
+      this.containers.countries.selectAll('path.base')
       // for testing map
       //this.containers.countries.select('path')
-        .datum(this.features)
+        .data(this.features.features)
+        .join('path')
+        //.datum(this.features)
+        .attr('class', 'base')
         .attr('d', this.path);
     }
 
